@@ -1,64 +1,64 @@
-# tw-house-ops User Profile
+# ie-house-ops User Profile
 # Copy this file to config/profile.yml and fill in your details.
 # This file (profile.yml) is in the USER LAYER — it will never be overwritten by system updates.
 
 user:
   name: ""                          # Your name
   commute_origin: ""                # Work/school address for commute calculation
-  commute_max_minutes: 40           # Max acceptable commute (minutes)
+  commute_max_minutes: 45           # Max acceptable commute (minutes)
 
 search:
   mode: rent                        # rent | buy | both
-  buyer_type: renter                # renter | first_time | upgrader
+  buyer_type: renter                # renter | first_time_buyer | mover
 
 budget:
-  rent_max: 25000                   # Monthly rent ceiling (TWD)
-  buy_max: 15000000                 # Total purchase price ceiling (TWD)
-  monthly_payment_max: 35000        # Max monthly mortgage payment (TWD)
+  rent_max: 2500                    # Monthly rent ceiling (EUR)
+  buy_max: 500000                   # Total purchase price ceiling (EUR)
+  monthly_payment_max: 2000         # Max monthly mortgage payment (EUR)
 
 finance:                            # Used for buy mode
-  monthly_income: 80000             # Gross monthly income (TWD)
-  savings: 1500000                  # Available for down payment (TWD)
-  youth_loan_eligible: true         # 青安貸款: age ≤ 40, no existing property
+  gross_annual_income: 60000        # Gross annual income (EUR)
+  savings: 50000                    # Available for deposit (EUR)
+  htb_eligible: true                # Help to Buy (first-time buyer, new build only)
+  fhs_eligible: true                # First Home Scheme (first-time buyer, new build only)
 
-current_property:                   # upgrader only — leave null if not applicable
-  estimated_value: null             # Estimated current market value (TWD)
-  loan_remaining: null              # Outstanding mortgage balance (TWD)
-  purchase_year: null               # Year purchased (for 房地合一稅 calculation)
+current_property:                   # mover only — leave null if not applicable
+  estimated_value: null             # Estimated current market value (EUR)
+  mortgage_remaining: null          # Outstanding mortgage balance (EUR)
+  purchase_year: null               # Year purchased (for CGT calculation)
   selling_strategy: sell_first      # sell_first | buy_first | simultaneous
 
 property:
-  size_min: 12                      # Minimum size (坪)
-  size_max: null                    # Maximum size (坪), null = no limit
-  floor_min: 2                      # Minimum floor (1 = ground floor ok)
+  size_min: 50                      # Minimum size (m²)
+  size_max: null                    # Maximum size (m²), null = no limit
+  bedrooms_min: 2                   # Minimum number of bedrooms
+  ber_min: null                     # Minimum BER rating (e.g., C1) — skip anything worse
   types:
-    include: ["公寓", "華廈", "大樓", "透天", "套房"]
-    exclude: ["預售屋", "店面", "辦公室", "車位"]
-  age_max: 40                       # Maximum building age (years)
-  elevator: optional                # true | false | optional
+    include: ["apartment", "semi-detached", "detached", "terraced", "townhouse"]
+    exclude: ["site", "commercial"]
   parking: optional                 # true | false | optional
   pet: false                        # Pet-friendly required?
+  garden: optional                  # true | false | optional
 
 regions:
-  - city: "台北市"
-    districts: ["信義區", "大安區"]  # Target districts
-  # - city: "新北市"
-  #   districts: ["板橋區"]
+  - county: "Dublin"
+    areas: ["Dublin 2", "Dublin 4"]  # Target areas / postal districts
+  # - county: "Cork"
+  #   areas: ["Cork City"]
 
 lifestyle:
-  mrt_walk_max: 15                  # Max walking distance to MRT (minutes)
+  transport_walk_max: 15            # Max walking distance to public transport (minutes)
   priorities:                       # Ranked by importance
-    - mrt
+    - luas
+    - dart
     - supermarket
     - school
-    - hospital
 
 narrative:
   deal_breakers:                    # Automatic disqualifiers
-    - "頂樓加蓋"
-    - "一樓"
-    - "鄰近殯儀館"
+    - "no BER cert"
+    - "unauthorised extension"
   nice_to_have:                     # Positive signals (boost score)
-    - "南北採光"
-    - "社區管理"
+    - "south-facing garden"
+    - "BER A or B"
   notes: ""                         # Free text: anything else the evaluator should know

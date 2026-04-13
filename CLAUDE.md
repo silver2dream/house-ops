@@ -1,8 +1,8 @@
-# tw-house-ops — AI House Hunting Pipeline for Taiwan
+# ie-house-ops — AI House Hunting Pipeline for Ireland
 
-## What is tw-house-ops
+## What is ie-house-ops
 
-tw-house-ops is an AI-powered real estate search pipeline built on Claude Code, designed for house hunters in Taiwan. It automates listing discovery, evaluation, and tracking across the full search lifecycle — from scanning portals like 591, 樂屋網, and 信義房屋, through structured evaluation against your budget and lifestyle criteria, to managing a tracker of every property you've considered. It supports three buyer personas (renter, first-time buyer, upgrader), handles both rental and purchase markets, and produces structured reports so you can make informed decisions without drowning in listings.
+ie-house-ops is an AI-powered real estate search pipeline built on Claude Code, designed for house hunters in Ireland. It automates listing discovery, evaluation, and tracking across the full search lifecycle — from scanning portals like Daft.ie, MyHome.ie, and Property.ie, through structured evaluation against your budget and lifestyle criteria, to managing a tracker of every property you've considered. It supports three buyer personas (renter, first-time buyer, mover), handles both rental and purchase markets, and produces structured reports so you can make informed decisions without drowning in listings.
 
 ---
 
@@ -15,18 +15,19 @@ On every session start, run these checks **silently** (no output to the user unl
 3. Does `data/tracker.md` exist?
 4. Does `data/pipeline.md` exist?
 5. Does `modes/_profile.md` exist?
-6. Is `agent-browser` installed? Run `which agent-browser` silently.
+6. Is `playwright-cli` installed? Run `which playwright-cli` silently.
 
 **If `modes/_profile.md` is missing** → silently copy from `modes/_profile.template.md`. This is the user's customization file and will never be overwritten by system updates.
 
 **If any of the five main files are missing** → enter Onboarding mode (see next section). Do NOT run evaluations, scans, or any other mode until the basics are in place.
 
-**If `agent-browser` is not found** → warn the user immediately (this is NOT silent):
-> ⚠️ `agent-browser` 未安裝。掃描（scan）與物件上架驗證功能需要它才能運作。請先執行：
+**If `playwright-cli` is not found** → warn the user immediately (this is NOT silent):
+> Warning: `playwright-cli` is not installed. Scanning and listing verification features require it to function. Please run:
 > ```bash
-> npm install -g agent-browser
+> npm install -g @playwright/cli@latest
+> playwright-cli install --skills
 > ```
-> 安裝完成後重新開啟 Claude Code 即可正常使用。未安裝的情況下執行 scan 或貼上 URL，爬取結果將不可靠，後續評估可能基於過期或錯誤資料。
+> Restart Claude Code after installation. Without it, running `scan` or pasting a URL will produce unreliable scraping results, and subsequent evaluations may be based on stale or incorrect data.
 
 ---
 
@@ -42,18 +43,18 @@ Ask:
 - Set `search.mode` to `rent`, `buy`, or `both`
 - Set `buyer_type`:
   - Renting → `renter`
-  - Buying, no existing property → `first_time`
-  - Buying, already own a home → `upgrader`
+  - Buying, no existing property → `first_time_buyer`
+  - Buying, already own a home → `mover`
 
 ### Step 2: Region + Budget
 
 Ask:
-> "Which cities or districts are you targeting? And what's your budget?
-> - For rent: monthly ceiling in TWD
-> - For buy: total price ceiling in TWD, and your max monthly mortgage payment"
+> "Which counties or areas are you targeting? (e.g., Dublin 2, Dublin 4, Dun Laoghaire, Ranelagh, Cork City) And what's your budget?
+> - For rent: monthly ceiling in EUR
+> - For buy: max purchase price in EUR, and your max monthly mortgage payment in EUR"
 
 Fill in:
-- `regions[].city` and `regions[].districts`
+- `regions[].county` and `regions[].areas`
 - `budget.rent_max` (if renting) or `budget.buy_max` + `budget.monthly_payment_max` (if buying)
 
 ### Step 3: Commute Origin
@@ -65,17 +66,33 @@ Fill in:
 - `user.commute_origin`
 - `user.commute_max_minutes`
 
-### Step 4: Upgrader Supplement (only if `buyer_type = upgrader`)
+### Step 4a: First-Time Buyer Supplement (only if `buyer_type = first_time_buyer`)
 
 Ask:
-> "Since you're upgrading, I need a few details about your current property to help with timing and tax calculations:
-> - Estimated current market value (TWD)
-> - Outstanding mortgage balance (TWD)
+> "Since you're a first-time buyer, I need a few details to help with affordability and government scheme eligibility:
+> - Gross annual salary (EUR)
+> - Savings available for deposit (EUR)
+> - Are you eligible for Help to Buy (HTB)? (new build only, tax refund up to EUR 30,000)
+> - Are you interested in the First Home Scheme (FHS)? (shared equity up to 30%, new build, FTB only)"
+
+Fill in `finance` block:
+- `annual_income`, `savings`, `htb_eligible`, `fhs_interested`
+
+Note: Central Bank rules for FTBs allow max 4x gross annual income, with 10% deposit required.
+
+### Step 4b: Mover Supplement (only if `buyer_type = mover`)
+
+Ask:
+> "Since you're moving, I need a few details about your current property to help with timing and tax calculations:
+> - Estimated current market value (EUR)
+> - Outstanding mortgage balance (EUR)
 > - Year you purchased it
 > - Strategy: sell first, buy first, or simultaneous?"
 
 Fill in `current_property` block:
 - `estimated_value`, `loan_remaining`, `purchase_year`, `selling_strategy`
+
+Note: Central Bank rules for second/subsequent buyers allow max 3.5x gross annual income, with 20% deposit required. Capital Gains Tax (CGT) at 33% applies on gains, but Principal Private Residence (PPR) relief exempts your own home.
 
 ### Step 5: Create Config Files
 
@@ -84,10 +101,10 @@ Using the answers from Steps 1–4, auto-create the following:
 - **`config/profile.yml`** — copy from `config/profile.example.yml`, fill in user's answers
 - **`data/tracker.md`** — create with header:
   ```markdown
-  # 物件追蹤
+  # Property Tracker
 
-  | # | 日期 | 平台 | 地址 | 類型 | 價格 | 坪數 | 分數 | 狀態 | 報告 | 備註 |
-  |---|------|------|------|------|------|------|------|------|------|------|
+  | # | Date | Portal | Address | Type | Price | Size | Score | Status | Report | Notes |
+  |---|------|--------|---------|------|-------|------|-------|--------|--------|-------|
   ```
 - **`data/scan-history.tsv`** — create empty file (header only):
   ```
@@ -112,11 +129,11 @@ Auto-copy `portals.example.yml` → `portals.yml`. Tell the user:
 Confirm setup is complete and offer an immediate scan:
 > "You're all set! Here's what you can do now:
 > - Paste a listing URL to evaluate it
-> - Say 'scan' to search your target regions for new listings
+> - Say 'scan' to search your target areas for new listings
 > - Say 'pipeline' to process any pending URLs
 > - Say 'tracker' to see your search summary
 >
-> Want me to scan for listings in your target regions right now?"
+> Want me to scan for listings in your target areas right now?"
 
 ---
 
@@ -143,7 +160,7 @@ Confirm setup is complete and offer an immediate scan:
 | Asks to evaluate a rental | `modes/rent.md` |
 | Asks to evaluate a purchase | `modes/buy.md` |
 | Wants an affordability calculation | `modes/afford.md` |
-| Is planning an upgrade (sell + buy) | `modes/switch.md` |
+| Is planning a move (sell + buy) | `modes/switch.md` |
 | Wants to compare two or more listings | `modes/compare.md` |
 | Is preparing for a property viewing | `modes/visit.md` |
 | Wants to scan portals for new listings | `modes/scan.md` |
@@ -151,8 +168,8 @@ Confirm setup is complete and offer an immediate scan:
 | Wants to process pending pipeline URLs | `modes/pipeline.md` |
 
 **When `search.mode: both`:** Detect listing type from page content:
-- Contains 月租 or 押金 (without total price) → treat as **rent** → use `modes/rent.md`
-- Contains 總價 without monthly rent → treat as **buy** → use `modes/buy.md`
+- Contains "per month" or "pcm" or monthly rent (without asking price) → treat as **rent** → use `modes/rent.md`
+- Contains asking price without monthly rent → treat as **buy** → use `modes/buy.md`
 - Ambiguous → ask user before proceeding
 
 ---
@@ -163,23 +180,23 @@ When the user pastes a URL, execute this sequence:
 
 ### 1. Verify Listing is Active
 
-Use `agent-browser` (via Bash tool):
+Use `playwright-cli` (via Bash tool):
 ```bash
-agent-browser open {url}
-agent-browser snapshot -i
+playwright-cli goto {url}
+playwright-cli snapshot
 ```
 
 Interpretation:
 - Only footer/navbar present, no listing content → listing **closed** → report "Listing no longer available" and stop
 - Title + description + price + contact/apply section present → listing **active** → continue
 
-**NEVER** rely on WebSearch or WebFetch alone to verify if a listing is active. Always use `agent-browser`. If `agent-browser` is not installed, stop and remind the user to install it before proceeding.
+**NEVER** rely on WebSearch or WebFetch alone to verify if a listing is active. Always use `playwright-cli`. If `playwright-cli` is not installed, stop and remind the user to install it before proceeding.
 
 ### 2. Detect Rent vs Buy
 
 From page content:
-- Monthly rent figure (月租金 / 月付) + deposit (押金) → **rent**
-- Total price (總價) without monthly rent → **buy**
+- Monthly rent figure ("per month" / "pcm") + deposit → **rent**
+- Asking price without monthly rent → **buy**
 - Ambiguous → ask user
 
 ### 3. Phase 1 Quick Filter
@@ -189,9 +206,9 @@ Check these criteria against `config/profile.yml`. If any fail, mark **skip** an
 | Criterion | Profile field | Fail condition |
 |-----------|---------------|----------------|
 | Price | `budget.rent_max` / `budget.buy_max` | Listing price > budget ceiling |
-| Size | `property.size_min` | Listed 坪數 < minimum |
-| Floor | `property.floor_min` | Floor < minimum (or ground floor if floor_min > 1) |
-| Building age | `property.age_max` | Building age > maximum |
+| Size | `property.size_min` | Listed m² < minimum |
+| Bedrooms | `property.bedrooms_min` | Bedrooms < minimum |
+| BER rating | `property.ber_max` | BER worse than maximum (e.g., listing is F, limit is D) |
 
 ### 4. Phase 2: Full Evaluation
 
@@ -218,17 +235,18 @@ If Phase 1 disqualifies the listing:
 ### Naming
 
 ```
-{###}-{district}-{road-slug}-{YYYY-MM-DD}.md
+{###}-{area}-{road-slug}-{YYYY-MM-DD}.md
 ```
 
 - `{###}`: sequential 3-digit zero-padded integer (max existing report number + 1)
-- `{district}`: district name romanized (e.g., `daan`, `xinyi`, `zhongshan`)
-- `{road-slug}`: road name romanized via pinyin approximation, hyphenated (e.g., `renai-rd`, `zhongxiao-e-rd`); if ambiguous or unresolvable, use `road-{4-char-hex}` (e.g., `road-3a7f`)
+- `{area}`: area name lowercase (e.g., `d2`, `d4`, `ranelagh`, `stillorgan`, `cork-city`, `dun-laoghaire`)
+- `{road-slug}`: road/street name lowercase hyphenated (e.g., `merrion-sq`, `baggot-st`, `grafton-st`); if ambiguous or unresolvable, use `road-{4-char-hex}` (e.g., `road-3a7f`)
 - `{YYYY-MM-DD}`: evaluation date
 
 Examples:
-- `001-daan-renai-rd-2025-04-08.md`
-- `042-xinyi-road-3a7f-2025-04-08.md`
+- `001-d2-merrion-sq-2025-04-08.md`
+- `042-ranelagh-chelmsford-rd-2025-04-08.md`
+- `015-cork-city-road-3a7f-2025-04-08.md`
 
 ### Required Report Header
 
@@ -302,6 +320,51 @@ Rules:
 - No markdown bold in status field
 - No dates in status field (use the date column)
 - No extra text in status field (use the notes column)
+
+---
+
+## Ireland Market Reference
+
+### Mortgage Rules (Central Bank of Ireland)
+- **First-time buyers (FTB):** max 4x gross annual income, 10% deposit required
+- **Second/subsequent buyers:** max 3.5x gross annual income, 20% deposit required
+- **Typical rates:** Variable ~3.5-4.5%, Fixed ~3.0-4.0%
+
+### Taxes and Costs
+- **Stamp duty:** 1% on first EUR 1M, 2% above EUR 1M (residential)
+- **Local Property Tax (LPT):** Annual tax based on property value
+- **Capital Gains Tax (CGT):** 33% on gains; Principal Private Residence (PPR) exemption for your own home
+- **Solicitor fees:** Typically EUR 2,000-4,000 for conveyancing
+- **Surveyor:** Pre-purchase structural survey typically EUR 300-600
+
+### Government Schemes (Buyers)
+- **Help to Buy (HTB):** FTB of new builds only, tax refund up to EUR 30,000 (10% of price, max EUR 500k property)
+- **First Home Scheme (FHS):** Government shared equity up to 30% for new builds, FTB only
+
+### Rental Market
+- **Rent Pressure Zones (RPZ):** Limits rent increases to max 2% per year in designated areas
+- **RTB (Residential Tenancies Board):** Regulates all private residential tenancies
+- **HAP (Housing Assistance Payment):** Government rental support scheme
+- **Standard deposit:** 1 month's rent
+
+### Key Resources
+- **Property Price Register (PPR):** propertypriceregister.ie — Ireland's transaction price database
+- **BER (Building Energy Rating):** A1 (best) to G (worst) — critical for energy costs
+- **PSRA:** Property Services Regulatory Authority — licenses estate agents/auctioneers
+
+### Portals
+- **Daft.ie** — dominant portal for both rent and buy
+- **MyHome.ie** — strong buy listings, Irish Times affiliated
+- **Property.ie** — additional buy listings
+- **SherryFitzGerald.ie** — major estate agent chain
+- **Lisney.com** — established Dublin-focused agent
+
+### Transport (Dublin)
+- **Luas:** Light rail (Green Line / Red Line)
+- **DART:** Suburban rail along the coast
+- **Dublin Bus / Bus Connects:** City and suburban bus network
+- **Bus Eireann:** Regional/intercity bus
+- **Irish Rail:** National rail network
 
 ---
 

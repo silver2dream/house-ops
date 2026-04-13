@@ -1,4 +1,4 @@
-# Canonical tracker statuses for tw-house-ops
+# Canonical tracker statuses for house-ops (Ireland)
 # Source of truth for all status fields in tracker.md
 
 states:
@@ -27,23 +27,23 @@ states:
     applies_to: [rent, buy]
 
   - name: Offer
-    description: Offer submitted
+    description: Offer submitted (rent: application sent; buy: offer made via estate agent)
     applies_to: [rent, buy]
 
   - name: Negotiating
-    description: Price negotiation in progress (rent: rent reduction / extra terms; buy: price)
+    description: Negotiation in progress (rent: terms/move-in date; buy: price negotiation, sale agreed pending)
     applies_to: [rent, buy]
 
   - name: Signed
-    description: Contract signed
+    description: Contract signed (rent: lease signed; buy: contracts exchanged via solicitors)
     applies_to: [rent, buy]
 
   - name: Done
-    description: Move-in complete / title transferred
+    description: Move-in complete / title transferred (buy: closing complete, keys received)
     applies_to: [rent, buy]
 
   - name: Expired
-    description: Listing taken down
+    description: Listing taken down or no longer available
     applies_to: [rent, buy]
 
 transitions:

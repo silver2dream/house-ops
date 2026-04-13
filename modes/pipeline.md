@@ -15,9 +15,9 @@ Processes all unchecked (`- [ ]`) entries in `data/pipeline.md`. For each entry:
 ## Step 1: Read Pipeline
 
 1. Read `data/pipeline.md`
-2. Find all lines matching: `- [ ] {url} | {portal} | {district} | {type} | {price} | {size} | {layout}`
-3. If no unchecked entries → output "Pipeline 已清空，無待處理物件。" and stop
-4. Log count: "找到 {N} 個待評估物件。"
+2. Find all lines matching: `- [ ] {url} | {portal} | {area} | {type} | {price} | {size} | {bedrooms}`
+3. If no unchecked entries → output "Pipeline is empty — no listings to process." and stop
+4. Log count: "Found {N} listings to evaluate."
 
 ---
 
@@ -31,11 +31,11 @@ For each `- [ ]` entry, in order:
 |-------|-----------|
 | URL | First field |
 | Portal | Second field |
-| District | Third field |
-| Type | Fourth field: `租` → rent, `買` → buy |
-| Price | Fifth field |
-| Size | Sixth field (坪, parse number) |
-| Layout | Seventh field |
+| Area | Third field |
+| Type | Fourth field: `rent` → rent, `buy` → buy |
+| Price | Fifth field (EUR, parse number) |
+| Size | Sixth field (m², parse number) |
+| Bedrooms | Seventh field |
 
 ### 2b: Apply Phase 1 Quick Filter
 
@@ -44,7 +44,7 @@ Check against `config/profile.yml`. For rent listings check `budget.rent_max`, f
 | Check | Rule |
 |-------|------|
 | Price | Parsed price > budget ceiling → skip |
-| Size | Parsed 坪數 < `property.size_min` → skip |
+| Size | Parsed m² < `property.size_min` → skip |
 | Floor | If floor visible in entry or URL → check vs `property.floor_min` |
 | Age | Usually not available at this stage — skip this check |
 
@@ -93,46 +93,46 @@ After all entries are processed:
 2. **Output summary table:**
 
 ```
-Pipeline 處理完成 — YYYY-MM-DD
+Pipeline Complete — YYYY-MM-DD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-總共處理: N 個物件
-  完整評估: N 個 (報告已生成)
-  快篩略過: N 個 (SKIP)
+Total processed: N listings
+  Full evaluation: N (reports generated)
+  Quick filter skip: N (SKIP)
 
-新增至追蹤表:
-  + {###} | {district} | {price} | {score}/5 | {status} | [報告連結](reports/{filename})
+Added to tracker:
+  + {###} | {area} | {price} | {score}/5 | {status} | [report link](reports/{filename})
   ...
 
-略過物件:
+Skipped:
   - {url} — {reason}
   ...
 ```
 
 **IMPORTANT — Human Review Output:**
-After the summary table, always output a dedicated review section. For each qualified listing (score ≥ 3.5), output the full report content inline — do NOT use file links. The user reads everything in the conversation, not in files.
+After the summary table, always output a dedicated review section. For each qualified listing (score >= 3.5), output the full report content inline — do NOT use file links. The user reads everything in the conversation, not in files.
 
 Format:
 
 ```
-## 待人工審閱
+## For Review
 
-| 優先 | 物件 | 坪數 | 月租/總價 | 一句話 | 分數 | 原始物件 |
-|------|------|------|----------|--------|------|---------|
-| ⭐⭐ | {district} {address} | {size}坪 | {price} | {one-line summary} | {score}/5 | [🔗 591]({listing_url}) |
-| ⭐  | {district} {address} | {size}坪 | {price} | {one-line summary} | {score}/5 | [🔗 591]({listing_url}) |
+| Priority | Property | Size | Rent/Price | Summary | Score | Listing |
+|----------|----------|------|------------|---------|-------|---------|
+| ** | {area} {address} | {size} m² | {price} | {one-line summary} | {score}/5 | [Daft]({listing_url}) |
+| *  | {area} {address} | {size} m² | {price} | {one-line summary} | {score}/5 | [MyHome]({listing_url}) |
 ...
 
 ---
 
-### ⭐⭐ {###} {district} {address}
-[🔗 591]({listing_url})
+### ** {###} {area} {address}
+[Daft]({listing_url})
 
-{full report content — all sections: 基本資料, 價格分析, 通勤評估, 生活機能, 物件條件, 風險與潛力, 評分, 建議}
+{full report content — all sections: Basic Info, Price Analysis, Commute Assessment, Local Amenities, Property Condition, Risks & Potential, Score, Recommendation}
 
 ---
 
-### ⭐ {###} {district} {address}
-[🔗 591]({listing_url})
+### * {###} {area} {address}
+[MyHome]({listing_url})
 
 {full report content}
 
@@ -141,8 +141,8 @@ Format:
 ```
 
 Priority rules:
-- ⭐⭐ = score ≥ 4.0 (推薦看屋)
-- ⭐  = score 3.5–3.9 (持保留態度)
+- ** = score >= 4.0 (recommended for viewing)
+- *  = score 3.5–3.9 (worth considering)
 - Omit listings scored < 3.5 from this section entirely
 
 ---

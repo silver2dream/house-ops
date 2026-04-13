@@ -1,173 +1,198 @@
-# tw-house-ops
+# ie-house-ops
 
-台灣看房 AI 管線，建構於 Claude Code 之上。自動化物件發掘、評估與追蹤，涵蓋租屋與購屋市場的完整搜尋流程。
+AI house hunting pipeline for Ireland, built on Claude Code. Automates listing discovery, evaluation, and tracking across the full search lifecycle for both rental and purchase markets.
 
-支援三種使用者類型：**租屋族**、**首購族**、**換屋族**。
+Supports three user types: **Renter**, **First-Time Buyer (FTB)**, **Mover** (upgrader/trader-up).
 
-> Inspired by [santifer/career-ops](https://github.com/santifer/career-ops) — same ops-style approach, applied to 台灣租屋 & 購屋.
+> Inspired by [santifer/career-ops](https://github.com/santifer/career-ops) — same ops-style approach, applied to house hunting in Ireland.
 
-![物件追蹤表](demo-images/tracker-demo.png)
-
----
-
-## 功能概覽
-
-- **掃描** 591、樂屋網、信義、永慶、東森、住商，搜尋符合條件的新物件
-- **評估** 每間物件：與市場行情（實價登錄）比較、通勤計算、五維度評分
-- **追蹤** 所有考慮過的物件，以結構化 Markdown 表格記錄
-- **試算** 可負擔房價（首購族）與換屋財務規劃（換屋族）
-- **準備** 根據評估報告產生看屋清單與議價策略
+![Property Tracker](demo-images/tracker-demo.png)
 
 ---
 
-## 事前準備
+## Features
 
-掃描（`scan`）與物件上架驗證依賴 `agent-browser`，**使用前必須安裝**：
+- **Scan** Daft.ie, MyHome.ie, Property.ie, SherryFitzGerald.ie, and Lisney.com for listings matching your criteria
+- **Evaluate** each property: compare against Property Price Register data, commute calculation, five-dimension scoring
+- **Track** every property you've considered in a structured Markdown table
+- **Calculate** affordability (FTB: Central Bank limits, HTB, First Home Scheme) and move planning (mover: sell + buy timing, CGT, equity release)
+- **Prepare** viewing checklists and negotiation strategies from evaluation reports
+
+---
+
+## Prerequisites
+
+Scanning (`scan`) and listing verification depend on `playwright-cli` — **you must install it before use**:
 
 ```bash
-npm install -g agent-browser
+npm install -g @playwright/cli@latest
+playwright-cli install --skills
 ```
 
-確認安裝成功：
+Confirm installation:
 
 ```bash
-agent-browser --version
+playwright-cli --version
 ```
 
-> 未安裝的情況下執行 `scan` 或貼上 URL，Claude 將無法爬取真實頁面內容，後續評估結果不可信。Claude Code 每次啟動時會自動偵測並提示。
+> Without `playwright-cli`, running `scan` or pasting a URL means Claude cannot scrape live page content, and subsequent evaluations will be unreliable. Claude Code checks for this automatically on every session start.
 
 ---
 
-## 快速開始
+## Quick Start
 
-1. 安裝 `agent-browser`（見上方）
-2. Clone 此 repo 並在 Claude Code 中開啟
-3. Claude 會自動偵測缺少的設定檔，啟動初始設定流程（7 個步驟，約 5 分鐘）
-4. 設定完成後，貼上任何物件 URL 即可評估——或輸入 `scan` 搜尋目標區域
+1. Install `playwright-cli` (see above)
+2. Clone this repo and open it in Claude Code
+3. Claude will detect missing config files and start the onboarding flow (7 steps, about 5 minutes)
+4. Once set up, paste any listing URL to evaluate it — or type `scan` to search your target areas
 
 ---
 
-## 用法
+## Usage
 
-| 輸入 | 動作 |
-|------|------|
-| 貼上物件 URL | 自動判斷租屋 / 買屋 → 評估 → 產生報告 |
-| `scan` | 在目標區域掃描各平台的新物件 |
-| `pipeline` | 批次處理 `data/pipeline.md` 中所有待評估 URL |
-| `compare 001, 003` | 並列比較兩間已評估物件 |
-| `prepare visit for 001` | 產生報告 001 的看屋清單與議價策略 |
-| `affordability` | 試算可負擔房價與區域適配（首購族） |
-| `upgrade plan` | 換屋財務規劃：賣舊屋 + 買新房時程與資金缺口分析（換屋族） |
-| `tracker` | 顯示所有追蹤物件的摘要 |
+| Input | Action |
+|-------|--------|
+| Paste a listing URL | Auto-detect rent / buy → evaluate → generate report |
+| `scan` | Scan target area portals for new listings |
+| `pipeline` | Batch-process all pending URLs in `data/pipeline.md` |
+| `compare 001, 003` | Side-by-side comparison of two evaluated properties |
+| `prepare visit for 001` | Generate viewing checklist and negotiation strategy for report 001 |
+| `affordability` | Calculate maximum affordable purchase price (FTB: Central Bank 4x rule, deposit, HTB/FHS) |
+| `move plan` | Move planning: sell current + buy new — timing, CGT, equity gap analysis (mover) |
+| `tracker` | Show summary of all tracked properties |
 
 ---
 
 ## Demo
 
-### Pipeline 批次評估輸出
+### Pipeline Batch Evaluation Output
 
-批次跑完後自動輸出摘要表 + 本輪最佳推薦，每筆附原始連結供人工覆核。
+After a batch run, Claude outputs a summary table with top recommendations and links to each listing for manual review.
 
-![Pipeline 處理摘要](demo-images/pipeline-summary-demo.png)
+![Pipeline Processing Summary](demo-images/pipeline-summary-demo.png)
 
-### 物件評估報告
+### Property Evaluation Report
 
-每間物件產出完整報告：價格分析（含實價登錄比對）、通勤試算、五維度評分、疑點清單、看屋問題清單。
+Each property gets a full report: price analysis (with Property Price Register comparison), commute calculation, five-dimension score, red flags, and viewing question list.
 
-![報告詳細內容 1](demo-images/report-details-1.png)
+![Report Details 1](demo-images/report-details-1.png)
 
-![報告詳細內容 2](demo-images/report-details-2.png)
+![Report Details 2](demo-images/report-details-2.png)
 
-![報告詳細內容 3](demo-images/report-details-3.png)
+![Report Details 3](demo-images/report-details-3.png)
 
 ---
 
-## 目錄結構
+## Directory Structure
 
 ```
-tw-house-ops/
-├── CLAUDE.md                    # 入口：模式路由、初始設定、資料合約
+ie-house-ops/
+├── CLAUDE.md                    # Entry point: mode routing, onboarding, data contract
 ├── config/
-│   ├── profile.yml              # 個人設定（永遠不會被系統更新覆寫）
-│   └── profile.example.yml      # 設定範本
-├── portals.yml                  # 各平台 URL 與掃描設定
+│   ├── profile.yml              # Personal settings (never overwritten by system updates)
+│   └── profile.example.yml      # Settings template
+├── portals.yml                  # Portal URLs and scanning config
 ├── modes/
-│   ├── _shared.md               # 評分維度、台灣市場知識
-│   ├── _profile.md              # 個人情境（每次評估都會注入）
-│   ├── _profile.template.md     # _profile.md 的初始範本
-│   ├── scan.md                  # 平台掃描器
-│   ├── rent.md                  # 租屋評估
-│   ├── buy.md                   # 購屋評估
-│   ├── afford.md                # 可負擔房價試算
-│   ├── switch.md                # 換屋規劃
-│   ├── compare.md               # 多物件比較
-│   ├── visit.md                 # 看屋清單與看後記錄
-│   └── pipeline.md              # 批次評估處理器
+│   ├── _shared.md               # Scoring dimensions, Ireland market knowledge
+│   ├── _profile.md              # Personal context (injected into every evaluation)
+│   ├── _profile.template.md     # Initial template for _profile.md
+│   ├── scan.md                  # Portal scanner
+│   ├── rent.md                  # Rental evaluation
+│   ├── buy.md                   # Purchase evaluation
+│   ├── afford.md                # Affordability calculator
+│   ├── switch.md                # Move planning (sell + buy)
+│   ├── compare.md               # Multi-property comparison
+│   ├── visit.md                 # Viewing checklist and post-visit notes
+│   └── pipeline.md              # Batch evaluation processor
 ├── data/
-│   ├── pipeline.md              # 待評估 URL 收件匣
-│   ├── tracker.md               # 物件追蹤主表
-│   └── scan-history.tsv         # 去重紀錄（已加入 .gitignore）
-├── reports/                     # 各物件評估報告
-├── batch/tracker-additions/     # 待合併 TSV 暫存
-├── templates/states.yml         # 追蹤表狀態標準值
-├── merge-tracker.mjs            # 合併 TSV 至 tracker.md
-├── verify-pipeline.mjs          # 驗證 pipeline 完整性
-└── dedup-tracker.mjs            # 移除重複的追蹤條目
+│   ├── pipeline.md              # Pending URL inbox
+│   ├── tracker.md               # Master property tracker
+│   └── scan-history.tsv         # Dedup log (gitignored)
+├── reports/                     # Individual evaluation reports
+├── batch/tracker-additions/     # Pending TSV files for merge
+├── templates/states.yml         # Canonical tracker statuses
+├── merge-tracker.mjs            # Merge TSV files into tracker.md
+├── verify-pipeline.mjs          # Validate pipeline integrity
+└── dedup-tracker.mjs            # Remove duplicate tracker entries
 ```
 
 ---
 
-## 評分標準
+## Scoring
 
-物件依五個維度評分 0–5：
+Properties are scored across five dimensions, each rated 0-5:
 
-| 維度 | 租屋權重 | 買屋權重 |
-|------|----------|----------|
-| 價格合理性 | 30% | 35% |
-| 空間與格局 | 20% | 20% |
-| 區域生活機能 | 25% | 20% |
-| 物件條件 | 15% | 15% |
-| 風險與潛力 | 10% | 10% |
+| Dimension | Rent Weight | Buy Weight |
+|-----------|-------------|------------|
+| Price fairness | 30% | 35% |
+| Space and layout | 20% | 20% |
+| Location and amenities | 25% | 20% |
+| Property condition | 15% | 15% |
+| Risk and potential | 10% | 10% |
 
-分數判讀：≥4.0 → 推薦看屋　·　3.5–3.9 → 持保留態度　·　<3.5 → 建議跳過
+Score interpretation: >=4.0 → recommend viewing | 3.5-3.9 → proceed with reservations | <3.5 → recommend skipping
 
 ---
 
-## 追蹤表狀態
+## Tracker Statuses
 
 `Scanned` → `Evaluated` → `Visit` → `Visited` → `Offer` → `Negotiating` → `Signed` → `Done`
 
-另有：`Skip`（篩除）、`Pass`（看後放棄）、`Expired`（物件已下架）
+Also: `Skip` (filtered out), `Pass` (rejected after viewing), `Expired` (listing removed)
 
 ---
 
-## 資料合約
+## Ireland Market Context
 
-**使用者層**（永遠不會被自動覆寫）：`config/profile.yml`、`modes/_profile.md`、`data/*`、`reports/*`
+### Key Portals
+- **Daft.ie** — dominant portal (rent and buy)
+- **MyHome.ie** — strong for sales, Irish Times affiliated
+- **Property.ie** — additional sales listings
+- **SherryFitzGerald.ie** / **Lisney.com** — major estate agent sites
 
-**系統層**（可能隨系統更新）：所有 mode 檔案、`CLAUDE.md`、`*.mjs` 腳本、`templates/*`
+### Mortgage Rules (Central Bank of Ireland)
+- FTB: max 4x gross annual income, 10% deposit
+- Second/subsequent buyer: max 3.5x gross annual income, 20% deposit
+
+### Government Schemes
+- **Help to Buy (HTB):** FTB, new builds only, up to EUR 30,000
+- **First Home Scheme (FHS):** Shared equity up to 30%, FTB, new builds only
+
+### Important References
+- **Property Price Register:** propertypriceregister.ie (transaction history)
+- **BER Rating:** A1 (best) to G (worst) — affects energy costs significantly
+- **RTB:** Residential Tenancies Board (rental regulations)
+- **PSRA:** Property Services Regulatory Authority (agent licensing)
 
 ---
 
-## 腳本
+## Data Contract
+
+**User layer** (never auto-overwritten): `config/profile.yml`, `modes/_profile.md`, `data/*`, `reports/*`
+
+**System layer** (may update with releases): all mode files, `CLAUDE.md`, `*.mjs` scripts, `templates/*`
+
+---
+
+## Scripts
 
 ```bash
-node merge-tracker.mjs           # 合併待新增 TSV 至 tracker.md
-node verify-pipeline.mjs         # 檢查 pipeline 完整性
-node dedup-tracker.mjs           # 移除重複追蹤條目
-node --test tests/**/*.test.mjs  # 執行所有測試
+node merge-tracker.mjs           # Merge pending TSV files into tracker.md
+node verify-pipeline.mjs         # Validate pipeline integrity
+node dedup-tracker.mjs           # Remove duplicate tracker entries
+node --test tests/**/*.test.mjs  # Run all tests
 ```
 
 ---
 
-## 使用原則
+## Principles
 
-本系統以精準找房為目標，非大量瀏覽。Claude 不會代替你送出 offer、簽約或送出任何申請。評分低於 3.5/5 的物件將被明確建議不值得追蹤。
+This system is designed for quality-focused house hunting, not volume browsing. Claude will never submit an offer, sign a contract, or send an application on your behalf without your explicit approval. Properties scoring below 3.5/5 will be flagged as not worth pursuing.
 
 ---
 
-## 支持這個專案
+## Support This Project
 
-如果這個工具對你的找房過程有幫助，歡迎請我喝杯咖啡 ☕
+If this tool has been helpful in your property search, feel free to buy me a coffee.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/kylinwin)
