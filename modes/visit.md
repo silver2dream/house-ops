@@ -1,6 +1,7 @@
 # Visit Mode — Visit Preparation and Post-Visit Recording
 
-<!-- Read modes/_shared.md and the relevant report before executing this mode. -->
+<!-- Read modes/_shared.md and the relevant report before executing this mode.
+     Load country_config from config/country/{country}.yml. -->
 
 ---
 
@@ -16,79 +17,70 @@ Two sub-modes:
 
 ### Input
 
-User provides a report number (e.g., "prepare visit for 001" or "看屋清單 003").
+User provides a report number (e.g., "prepare visit for 001").
 
 1. Search `reports/` for a file starting with `{###}-`
-2. If not found → "找不到報告 {###}，請確認報告編號。" and stop
-3. Read the report file fully — especially 疑點清單 and 看屋問題清單 sections
+2. If not found → "Report {###} not found. Please verify the report number." and stop
+3. Read the report file fully — especially the red flags and viewing questions sections
 
 ---
 
 ### Section A: Universal Checklist
 
-Items to check at every viewing regardless of listing type:
+Read the universal checklist from `country_config.visit_checklist.universal`. Present each item using its local-language label and check description:
 
-| # | 項目 | 檢查要點 |
-|---|------|---------|
-| 1 | 漏水痕跡 | 天花板、牆面（尤其是家具背後）、窗框周圍、浴室 |
-| 2 | 手機訊號 | 各個房間、廚房、衛浴都要確認訊號強度 |
-| 3 | 採光實測 | 開所有窗簾，各房間白天採光情況；注意遮擋物（鄰棟/廣告招牌） |
-| 4 | 隔音測試 | 靜下來聽：鄰居聲、馬路噪音、電梯運轉聲 |
-| 5 | 管委會 / 管理 | 是否有管委會？月費多少？可否索取近期會議記錄？ |
-| 6 | 熱水器 | 類型（瓦斯/電熱/太陽能）、年份、上次保養時間 |
-| 7 | 水管/排水 | 同時開所有水龍頭，沖馬桶，觀察排水速度 |
-| 8 | 門窗密封 | 開關每扇門窗，確認密封條完整、無異音、鎖具正常 |
-| 9 | 電梯（如有） | 實際搭乘，確認運作狀況、噪音、速度 |
-| 10 | 停車位（如有） | 確認位置、尺寸、使用方式 |
+| # | Item | What to check |
+|---|------|--------------|
+| 1 | {item label from config} | {check description from config} |
+| 2 | {item label from config} | {check description from config} |
+| ... | ... | ... |
+
+Example: if country is Taiwan, items include "漏水痕跡" with checks for "天花板、牆面...". If Ireland, items include "Dampness" with checks for "walls, ceilings, window sills..."
 
 ---
 
 ### Section B: Property-Specific Checklist
 
-Derived from the report's 疑點清單. For each 疑點 in the report:
+Derived from the report's red flags section. For each red flag in the report:
 
-| # | 來源疑點 | 看屋時要做什麼 |
-|---|---------|-------------|
-| 1 | {疑點 from report} | {specific inspection instruction} |
+| # | Source issue | What to do at viewing |
+|---|-------------|----------------------|
+| 1 | {red flag from report} | {specific inspection instruction} |
 
-Conversion rules:
-- 漏水跡象 → "重點查看：天花板右下角、廚房後方牆面、浴室磁磚接縫"
-- 老舊管線 → "詢問屋主/仲介是否曾換管；目視是否有外露鏽管"
-- 921前建物 → "詢問是否有結構安全鑑定報告；觀察柱/梁是否有裂縫"
-- 輻射屋風險 → "要求提供輻射偵測報告（γ射線檢測）；若無，建議自行委託檢測"
-- 海砂屋風險 → "要求提供氯離子含量報告；觀察天花板鋼筋是否有鏽跡滲出"
-- 頂樓物件 → "查看屋頂防水層、天花板是否有水漬"
-- 採光不足 → "實地測試各房間，比較照片與實際"
+For building-risk-related flags, use the `viewing_action` from the matching entry in `country_config.building_risks`. For other red flags, generate appropriate inspection instructions based on the issue type.
 
 ---
 
 ### Section C: Negotiation Strategy
 
-Read the report's 價格分析 section for price vs market data.
+Read the report's price analysis section for price vs market data.
 
-| 項目 | 金額 | 備註 |
-|------|------|------|
-| 掛牌價 | {listing price} | 現況 |
-| 實價登錄行情中位數 | {median} | 近6個月同區 |
-| 建議出價 | {suggested offer} | 約實登中位數，或掛牌價 ×95% |
-| 底線（可接受上限） | {walk-away} | 掛牌價×X% 或預算上限，取低者 |
-| 槓桿點 | {leverage points} | e.g., 在市場{N}天、{疑點}需修繕 |
+| Item | Amount | Notes |
+|------|--------|-------|
+| Listing price | {listing price} | Current |
+| Market reference median | {median} | Recent period, same area |
+| Suggested first offer | {suggested offer} | See logic below |
+| Walk-away ceiling | {walk-away} | Budget max or listing price * X%, whichever is lower |
+| Leverage points | {leverage points} | e.g., days on market, repair needs |
 
 **Suggested first offer logic:**
-- If listing is ≤5% above 實登 median: offer 實登 median directly
+- If listing is at or below 5% above market reference median: offer the median directly
 - If listing is >5% above: offer 5% below listing price
 - Never exceed `budget.rent_max` (rent) or `budget.buy_max` (buy)
 
-**Negotiation notes:** List any leverage points from the report (days on market, flagged issues that require repair, building age risks) that justify a lower offer.
+**Negotiation notes:** List any leverage points from the report (days on market, flagged issues that require repair, building risks) that justify a lower offer.
 
 ---
 
 ### Section D: Logistics Reminder
 
-- Bring: 身分證, 印章 (just in case), camera
-- Recommended visit time: morning or midday (check natural light; avoid landlord-staged evening lighting)
+Read logistics guidance from `country_config.visit_checklist.logistics`. Present as a reminder list.
+
+If the country config does not define logistics, use this universal fallback:
+- Bring: ID, camera/phone for photos
+- Recommended visit time: morning or midday (check natural light; avoid staged evening lighting)
 - Bring a measuring tape for key rooms
-- Check: garbage collection time, parking rules, neighbor demographics
+- Check: waste collection schedule, parking rules, neighbor demographics
 
 ---
 
@@ -100,21 +92,19 @@ User has completed the viewing and wants to record findings.
 
 ### Present template for user to fill in:
 
+Generate the template dynamically using the universal checklist items from `country_config.visit_checklist.universal`:
+
 ```markdown
 ## Post-Visit Record — Report {###}
 
 **Date visited:** {YYYY-MM-DD}
-**Overall impression (1–5):** 
+**Overall impression (1-5):**
 
 **Checklist notes:**
-- [ ] 漏水: 
-- [ ] 手機訊號: 
-- [ ] 採光: 
-- [ ] 隔音: 
-- [ ] 管委會: 
-- [ ] 熱水器: 
-- [ ] 水管排水: 
-- [ ] 門窗: 
+- [ ] {item 1 from config}: 
+- [ ] {item 2 from config}: 
+- [ ] {item 3 from config}: 
+...
 - [ ] Property-specific item 1: 
 - [ ] Property-specific item 2: 
 
@@ -135,7 +125,7 @@ User has completed the viewing and wants to record findings.
 1. **Update tracker.md directly** (status + notes column, direct edit allowed per CLAUDE.md):
    - Find the row with matching report number
    - Status: `Visit` → `Visited`
-   - Append visit summary to notes column (e.g., "看屋2026-04-10，整體印象4/5，無漏水")
+   - Append visit summary to notes column
 
 2. **If decision = pass:**
    - Update status to `Pass`

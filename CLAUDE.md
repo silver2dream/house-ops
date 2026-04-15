@@ -1,8 +1,8 @@
-# tw-house-ops — AI House Hunting Pipeline for Taiwan
+# house-ops — AI House Hunting Pipeline
 
-## What is tw-house-ops
+## What is house-ops
 
-tw-house-ops is an AI-powered real estate search pipeline built on Claude Code, designed for house hunters in Taiwan. It automates listing discovery, evaluation, and tracking across the full search lifecycle — from scanning portals like 591, 樂屋網, and 信義房屋, through structured evaluation against your budget and lifestyle criteria, to managing a tracker of every property you've considered. It supports three buyer personas (renter, first-time buyer, upgrader), handles both rental and purchase markets, and produces structured reports so you can make informed decisions without drowning in listings.
+house-ops is an AI-powered real estate search pipeline built on Claude Code, designed for house hunters in any supported country. It automates listing discovery, evaluation, and tracking across the full search lifecycle — from scanning portals, through structured evaluation against your budget and lifestyle criteria, to managing a tracker of every property you've considered. It supports three buyer personas (renter, first-time buyer, upgrader), handles both rental and purchase markets, and produces structured reports so you can make informed decisions without drowning in listings.
 
 ---
 
@@ -22,21 +22,44 @@ On every session start, run these checks **silently** (no output to the user unl
 **If any of the five main files are missing** → enter Onboarding mode (see next section). Do NOT run evaluations, scans, or any other mode until the basics are in place.
 
 **If `agent-browser` is not found** → warn the user immediately (this is NOT silent):
-> ⚠️ `agent-browser` 未安裝。掃描（scan）與物件上架驗證功能需要它才能運作。請先執行：
+> Warning: `agent-browser` is not installed. Scan and listing verification features require it. Please run:
 > ```bash
 > npm install -g agent-browser
 > ```
-> 安裝完成後重新開啟 Claude Code 即可正常使用。未安裝的情況下執行 scan 或貼上 URL，爬取結果將不可靠，後續評估可能基於過期或錯誤資料。
+> Restart Claude Code after installation. Without it, scan or URL paste results will be unreliable and evaluations may be based on stale or incorrect data.
+
+---
+
+## Country Configuration
+
+After first-session checks pass, load the country configuration:
+
+1. Read `config/profile.yml` → get the `country` field (e.g., `tw`, `ie`, `jp`)
+2. Read `config/country/{country}.yml` → load as `country_config`
+3. **All country-specific content comes from this config.** Mode files never hard-code country-specific values — they reference `country_config.{section}.{field}` instead.
+
+If the `country` field is missing from `profile.yml`, ask the user which country they are searching in, then set it.
+
+The country config provides: currency, area units, tax rules, mortgage scenarios, government schemes, building risk flags, scoring dimension labels and weights, report section labels, address normalization rules, listing field names, portal definitions, transport systems, visit checklists, onboarding prompts, and listing detection signals.
 
 ---
 
 ## Onboarding Flow
 
-Guide the user through these 7 steps in order. Do not skip ahead.
+Guide the user through these 8 steps in order. Do not skip ahead.
+
+### Step 0: Country
+
+If `config/profile.yml` does not yet exist, ask:
+> "Which country are you searching in?"
+
+Verify that `config/country/{code}.yml` exists for the given country. If not, inform the user that the country is not yet supported.
+
+Set `country` in the profile.
 
 ### Step 1: Search Mode
 
-Ask:
+Use the prompt from `country_config.onboarding.prompts.search_mode` if available. Otherwise ask:
 > "Are you looking to **rent**, **buy**, or **both**?"
 
 - Set `search.mode` to `rent`, `buy`, or `both`
@@ -47,18 +70,18 @@ Ask:
 
 ### Step 2: Region + Budget
 
-Ask:
-> "Which cities or districts are you targeting? And what's your budget?
-> - For rent: monthly ceiling in TWD
-> - For buy: total price ceiling in TWD, and your max monthly mortgage payment"
+Use the prompt from `country_config.onboarding.prompts.region_budget` if available (it references the country's currency). Otherwise ask:
+> "Which cities or areas are you targeting? And what's your budget?
+> - For rent: monthly ceiling in [currency from country_config.market.currency]
+> - For buy: total price ceiling in [currency], and your max monthly mortgage payment"
 
 Fill in:
-- `regions[].city` and `regions[].districts`
+- Target regions (using the region structure from `country_config.regions.structure`)
 - `budget.rent_max` (if renting) or `budget.buy_max` + `budget.monthly_payment_max` (if buying)
 
 ### Step 3: Commute Origin
 
-Ask:
+Use the prompt from `country_config.onboarding.prompts.commute` if available. Otherwise ask:
 > "Where do you commute to? (Work address, school, or major landmark — used to filter by commute time.) What's the maximum commute you'd accept in minutes?"
 
 Fill in:
@@ -67,10 +90,10 @@ Fill in:
 
 ### Step 4: Upgrader Supplement (only if `buyer_type = upgrader`)
 
-Ask:
+Use the prompt from `country_config.onboarding.prompts.upgrader_supplement` if available. Otherwise ask:
 > "Since you're upgrading, I need a few details about your current property to help with timing and tax calculations:
-> - Estimated current market value (TWD)
-> - Outstanding mortgage balance (TWD)
+> - Estimated current market value
+> - Outstanding mortgage balance
 > - Year you purchased it
 > - Strategy: sell first, buy first, or simultaneous?"
 
@@ -79,15 +102,15 @@ Fill in `current_property` block:
 
 ### Step 5: Create Config Files
 
-Using the answers from Steps 1–4, auto-create the following:
+Using the answers from Steps 0–4, auto-create the following:
 
-- **`config/profile.yml`** — copy from `config/profile.example.yml`, fill in user's answers
+- **`config/profile.yml`** — copy from `config/profile.{country}.example.yml` if it exists, otherwise from `config/profile.example.yml`, then fill in user's answers. Ensure the `country` field is set.
 - **`data/tracker.md`** — create with header:
   ```markdown
-  # 物件追蹤
+  # Property Tracker
 
-  | # | 日期 | 平台 | 地址 | 類型 | 價格 | 坪數 | 分數 | 狀態 | 報告 | 備註 |
-  |---|------|------|------|------|------|------|------|------|------|------|
+  | # | Date | Portal | Address | Type | Price | Size | Score | Status | Report | Notes |
+  |---|------|--------|---------|------|-------|------|-------|--------|--------|-------|
   ```
 - **`data/scan-history.tsv`** — create empty file (header only):
   ```
@@ -104,8 +127,8 @@ Using the answers from Steps 1–4, auto-create the following:
 
 ### Step 6: Copy Portals Config
 
-Auto-copy `portals.example.yml` → `portals.yml`. Tell the user:
-> "I've copied the default portals configuration. You can customize which sites and search parameters to use by editing `portals.yml`, or just ask me."
+Auto-copy `portals.{country}.example.yml` → `portals.yml` if it exists, otherwise copy `portals.example.yml`. Tell the user:
+> "I've copied the default portals configuration for your country. You can customize which sites and search parameters to use by editing `portals.yml`, or just ask me."
 
 ### Step 7: Ready
 
@@ -125,7 +148,8 @@ Confirm setup is complete and offer an immediate scan:
 | File | Purpose |
 |------|---------|
 | `CLAUDE.md` | Entry point — routing brain Claude reads every session |
-| `config/profile.yml` | User preferences: budget, regions, commute, property criteria |
+| `config/profile.yml` | User preferences: country, budget, regions, commute, property criteria |
+| `config/country/{code}.yml` | Country-specific config: currency, taxes, mortgage, scoring labels, etc. |
 | `portals.yml` | Portal URLs, search queries, and scraping config |
 | `data/pipeline.md` | Inbox of pending listing URLs to process |
 | `data/tracker.md` | Master tracker of all evaluated properties |
@@ -150,9 +174,9 @@ Confirm setup is complete and offer an immediate scan:
 | Asks about tracker / search status | Show `data/tracker.md` summary |
 | Wants to process pending pipeline URLs | `modes/pipeline.md` |
 
-**When `search.mode: both`:** Detect listing type from page content:
-- Contains 月租 or 押金 (without total price) → treat as **rent** → use `modes/rent.md`
-- Contains 總價 without monthly rent → treat as **buy** → use `modes/buy.md`
+**When `search.mode: both`:** Detect listing type from page content using `country_config.listing_detection`:
+- If page content matches any `rent_signals` (without buy signals) → treat as **rent** → use `modes/rent.md`
+- If page content matches any `buy_signals` (without rent signals) → treat as **buy** → use `modes/buy.md`
 - Ambiguous → ask user before proceeding
 
 ---
@@ -177,21 +201,21 @@ Interpretation:
 
 ### 2. Detect Rent vs Buy
 
-From page content:
-- Monthly rent figure (月租金 / 月付) + deposit (押金) → **rent**
-- Total price (總價) without monthly rent → **buy**
+From page content, use `country_config.listing_detection.rent_signals` and `.buy_signals` to determine the listing type:
+- Matches rent signals (without buy signals) → **rent**
+- Matches buy signals (without rent signals) → **buy**
 - Ambiguous → ask user
 
 ### 3. Phase 1 Quick Filter
 
-Check these criteria against `config/profile.yml`. If any fail, mark **skip** and note the reason:
+Check these criteria against `config/profile.yml`. Refer to `country_config` for which checks apply (some countries check BER rating instead of building age, some check floor, etc.). Standard checks:
 
 | Criterion | Profile field | Fail condition |
 |-----------|---------------|----------------|
 | Price | `budget.rent_max` / `budget.buy_max` | Listing price > budget ceiling |
-| Size | `property.size_min` | Listed 坪數 < minimum |
-| Floor | `property.floor_min` | Floor < minimum (or ground floor if floor_min > 1) |
-| Building age | `property.age_max` | Building age > maximum |
+| Size | `property.size_min` | Listed size < minimum (using country's area unit from `country_config.market.area_unit`) |
+
+Additional checks vary by country — apply any checks defined in the profile (e.g., `property.floor_min`, `property.age_max`, `property.ber_min`).
 
 ### 4. Phase 2: Full Evaluation
 
@@ -218,17 +242,17 @@ If Phase 1 disqualifies the listing:
 ### Naming
 
 ```
-{###}-{district}-{road-slug}-{YYYY-MM-DD}.md
+{###}-{area}-{road-slug}-{YYYY-MM-DD}.md
 ```
 
 - `{###}`: sequential 3-digit zero-padded integer (max existing report number + 1)
-- `{district}`: district name romanized (e.g., `daan`, `xinyi`, `zhongshan`)
-- `{road-slug}`: road name romanized via pinyin approximation, hyphenated (e.g., `renai-rd`, `zhongxiao-e-rd`); if ambiguous or unresolvable, use `road-{4-char-hex}` (e.g., `road-3a7f`)
+- `{area}`: area/district name romanized or slugified from the listing address
+- `{road-slug}`: road/street name slugified and hyphenated; if ambiguous or unresolvable, use `road-{4-char-hex}` (e.g., `road-3a7f`)
 - `{YYYY-MM-DD}`: evaluation date
 
-Examples:
-- `001-daan-renai-rd-2025-04-08.md`
-- `042-xinyi-road-3a7f-2025-04-08.md`
+Examples (vary by country):
+- Taiwan: `001-daan-renai-rd-2025-04-08.md`
+- Ireland: `001-ranelagh-grove-park-2025-04-08.md`
 
 ### Required Report Header
 
@@ -325,6 +349,7 @@ These files are part of the system and may be updated:
 - `CLAUDE.md`
 - `*.mjs` scripts
 - `templates/*`
+- `config/country/*.yml`
 
 ### The Rule
 

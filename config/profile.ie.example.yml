@@ -1,0 +1,64 @@
+# house-ops User Profile — Ireland
+# During onboarding, this is copied to config/profile.yml and filled in.
+# profile.yml is in the USER LAYER — it will never be overwritten by system updates.
+
+country: ie                            # Country code (loads config/country/ie.yml)
+
+user:
+  name: ""                          # Your name
+  commute_origin: ""                # Work/school address for commute calculation
+  commute_max_minutes: 45           # Max acceptable commute (minutes)
+
+search:
+  mode: rent                        # rent | buy | both
+  buyer_type: renter                # renter | first_time_buyer | mover
+
+budget:
+  rent_max: 2500                    # Monthly rent ceiling (EUR)
+  buy_max: 500000                   # Total purchase price ceiling (EUR)
+  monthly_payment_max: 2000         # Max monthly mortgage payment (EUR)
+
+finance:                            # Used for buy mode
+  gross_annual_income: 60000        # Gross annual income (EUR)
+  savings: 50000                    # Available for deposit (EUR)
+  htb_eligible: true                # Help to Buy (first-time buyer, new build only)
+  fhs_eligible: true                # First Home Scheme (first-time buyer, new build only)
+
+current_property:                   # mover only — leave null if not applicable
+  estimated_value: null             # Estimated current market value (EUR)
+  mortgage_remaining: null          # Outstanding mortgage balance (EUR)
+  purchase_year: null               # Year purchased (for CGT calculation)
+  selling_strategy: sell_first      # sell_first | buy_first | simultaneous
+
+property:
+  size_min: 50                      # Minimum size (m²)
+  size_max: null                    # Maximum size (m²), null = no limit
+  bedrooms_min: 2                   # Minimum number of bedrooms
+  ber_min: null                     # Minimum BER rating (e.g., C1) — skip anything worse
+  types:
+    include: ["apartment", "semi-detached", "detached", "terraced", "townhouse"]
+    exclude: ["site", "commercial"]
+  parking: optional                 # true | false | optional
+  pet: false                        # Pet-friendly required?
+  garden: optional                  # true | false | optional
+
+regions:
+  - county: "Dublin"
+    areas: ["Dublin 2", "Dublin 4"]  # Target areas / postal districts
+
+lifestyle:
+  transport_walk_max: 15            # Max walking distance to public transport (minutes)
+  priorities:
+    - luas
+    - dart
+    - supermarket
+    - school
+
+narrative:
+  deal_breakers:
+    - "no BER cert"
+    - "unauthorised extension"
+  nice_to_have:
+    - "south-facing garden"
+    - "BER A or B"
+  notes: ""

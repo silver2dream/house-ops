@@ -1,0 +1,542 @@
+# Taiwan Country Configuration — tw-house-ops
+# All country-specific content extracted from mode files into structured YAML.
+# This file is part of the SYSTEM LAYER and may be updated by system updates.
+
+meta:
+  code: tw
+  name: Taiwan
+  name_local: "台灣"
+  language: zh-TW
+
+market:
+  currency: TWD
+  currency_symbol: "NT$"
+  area_unit: ping
+  area_unit_symbol: "坪"
+  area_to_sqm: 3.3058
+  price_per_area_label: "/坪"
+  rent_period_label: "/月"
+
+regions:
+  structure: "city > district (市/縣 > 區/鄉/鎮). Portals use numeric region codes."
+  region_codes:
+    - city: "台北市"
+      code: 1
+    - city: "新北市"
+      code: 2
+    - city: "桃園市"
+      code: 3
+    - city: "台中市"
+      code: 5
+    - city: "台南市"
+      code: 15
+    - city: "高雄市"
+      code: 17
+
+property_types:
+  include:
+    - key: apartment
+      name_local: "公寓"
+      name_en: "Walk-up apartment (no elevator)"
+    - key: mansion
+      name_local: "華廈"
+      name_en: "Low-rise with elevator"
+    - key: building
+      name_local: "大樓"
+      name_en: "High-rise building"
+    - key: townhouse
+      name_local: "透天"
+      name_en: "Townhouse / detached"
+    - key: studio
+      name_local: "套房"
+      name_en: "Studio"
+  exclude:
+    - name_local: "預售屋"
+      name_en: "Pre-sale / off-plan"
+    - name_local: "店面"
+      name_en: "Shopfront / commercial"
+    - name_local: "辦公室"
+      name_en: "Office"
+    - name_local: "車位"
+      name_en: "Parking space (standalone)"
+    - name_local: "工業用"
+      name_en: "Industrial"
+
+mortgage:
+  scenarios:
+    - key: youth_20
+      name: "青安貸款 20%"
+      name_local: "青安貸款 20%"
+      name_en: "Youth Housing Loan 20% down"
+      rate: 1.775
+      down_payment: 0.20
+      term_years: 30
+      eligibility: "age <= 40, no existing property ownership, first-time buyer"
+      max_loan: 8000000  # NT$8M
+    - key: youth_30
+      name: "青安貸款 30%"
+      name_local: "青安貸款 30%"
+      name_en: "Youth Housing Loan 30% down"
+      rate: 1.775
+      down_payment: 0.30
+      term_years: 30
+      eligibility: "age <= 40, no existing property ownership, first-time buyer"
+      max_loan: 8000000
+    - key: standard_20
+      name: "一般貸款 20%"
+      name_local: "一般貸款 20%"
+      name_en: "Standard mortgage 20% down"
+      rate: 2.1
+      down_payment: 0.20
+      term_years: 30
+      eligibility: null
+      max_loan: null
+    - key: standard_30
+      name: "一般貸款 30%"
+      name_local: "一般貸款 30%"
+      name_en: "Standard mortgage 30% down"
+      rate: 2.1
+      down_payment: 0.30
+      term_years: 30
+      eligibility: null
+      max_loan: null
+  affordability:
+    income_field: "finance.monthly_income"
+    income_period: monthly
+    payment_ceiling_pct: 30
+    income_multiple: null
+  buyer_types:
+    - key: renter
+      name_local: "租屋族"
+      name_en: "Renter"
+    - key: first_time
+      name_local: "首購族"
+      name_en: "First-time buyer"
+    - key: upgrader
+      name_local: "換屋族"
+      name_en: "Upgrader / mover"
+
+government_schemes:
+  - key: youth_loan
+    name_local: "青安貸款"
+    name_en: "Youth Housing Loan"
+    description: "Subsidised mortgage rate for first-time buyers age 40 or under with no existing property."
+    rate: 1.775
+    max_loan: 8000000
+    eligibility: "age <= 40, no existing property ownership, first-time buyer"
+    profile_field: "finance.youth_loan_eligible"
+
+taxes:
+  capital_gains:
+    name_local: "房地合一稅"
+    name_en: "Consolidated Housing and Land Transaction Income Tax"
+    holding_periods:
+      - max_years: 2
+        rate: 45
+        label_local: "未滿2年"
+        label_en: "Under 2 years"
+      - max_years: 5
+        rate: 35
+        label_local: "2至5年"
+        label_en: "2-5 years"
+      - max_years: 10
+        rate: 20
+        label_local: "5至10年"
+        label_en: "5-10 years"
+      - max_years: null
+        rate: 15
+        label_local: "超過10年"
+        label_en: "Over 10 years"
+    self_occupied:
+      rate: 10
+      condition: "2+ years registered residence at the property"
+      label_local: "自住（設籍滿2年）"
+      label_en: "Self-occupied (2+ years residence)"
+    default_gain_assumption: 0.10  # Assume gain = estimated_value * 10% if purchase price unknown
+  stamp_duty: null  # No separate stamp duty in Taiwan
+  property_tax:
+    description: "房屋稅 (annual) + 地價稅 (annual). Rates vary by assessed value and use type."
+    name_local: "房屋稅 + 地價稅"
+    name_en: "House tax + Land value tax"
+  transaction_costs:
+    estimate_pct: 6
+    breakdown:
+      - item_local: "仲介費"
+        item_en: "Agent commission"
+        typical_pct: "1-4%"
+      - item_local: "代書費"
+        item_en: "Land administrator (scrivener) fee"
+        typical_pct: "~0.5%"
+      - item_local: "契稅"
+        item_en: "Deed tax"
+        typical_pct: "~0.6% of assessed value"
+      - item_local: "印花稅"
+        item_en: "Stamp tax"
+        typical_pct: "0.1%"
+      - item_local: "登記規費"
+        item_en: "Registration fee"
+        typical_pct: "0.1%"
+
+building_risks:
+  - key: pre_1999_seismic
+    condition: "Year built < 1999"
+    severity: medium
+    flag_local: "921 前建物：建議確認結構安全鑑定"
+    flag_en: "Pre-921 earthquake building: verify structural safety certification"
+    viewing_action: "Ask for structural safety assessment report; inspect columns and beams for cracks"
+  - key: radiation_steel
+    condition: "Year built 1982-1984"
+    severity: high
+    flag_local: "輻射屋風險期：須委託專業輻射檢測，此為最高優先"
+    flag_en: "Radiation-contaminated steel risk period: professional radiation detection required, highest priority"
+    viewing_action: "Request gamma-ray radiation detection report; if unavailable, commission independent testing"
+  - key: chloride_concrete
+    condition: "Year built 1980s-1990s"
+    severity: medium
+    flag_local: "海砂屋風險期：建議要求氯離子含量報告"
+    flag_en: "Chloride-contaminated concrete risk period: request chloride ion content report"
+    viewing_action: "Request chloride ion content report; inspect ceiling for exposed rebar rust stains"
+
+transport:
+  systems:
+    - key: mrt
+      name_local: "捷運"
+      name_en: "MRT"
+    - key: bus
+      name_local: "公車"
+      name_en: "Bus"
+
+address_normalization:
+  rules:
+    - description: "Traditional to simplified form"
+      from: "臺"
+      to: "台"
+    - description: "Floor suffix normalisation"
+      examples: "3F / 三樓 / 3樓 → 3F"
+    - description: "Subdivision strip"
+      examples: "1之3號 → 1號"
+      note: "Strip 之 subdivisions"
+    - description: "Full-width to half-width"
+      examples: "３Ｆ → 3F"
+    - description: "Space removal"
+      examples: "Remove all spaces"
+
+market_reference:
+  price_register:
+    name_local: "實價登錄"
+    name_en: "Real Price Registration"
+    url: "https://lvr.land.moi.gov.tw"
+    lookback_months: 6
+    description: "Government-mandated transaction price disclosure system"
+  key_metrics:
+    - key: rent_per_area
+      label_local: "月租/坪"
+      label_en: "Monthly rent per ping"
+    - key: buy_per_area
+      label_local: "總價/坪"
+      label_en: "Total price per ping"
+  reference_districts:
+    premium: ["大安區", "信義區"]
+    mid_range: ["萬華區", "中山區"]
+
+portals:
+  - name: "591 租屋"
+    type: rent
+    access_method: spa_playwright
+    url_template: "https://rent.591.com.tw/?region={region_code}&section={section_codes}&rentprice=0,{rent_max}&area={size_min},"
+  - name: "591 買屋"
+    type: buy
+    access_method: spa_playwright
+    url_template: "https://sale.591.com.tw/?region={region_code}&price=0,{buy_max}&area={size_min},"
+  - name: "樂屋網"
+    type: buy
+    access_method: spa_playwright
+    base_url: "https://www.rakuya.com.tw/sell/search"
+  - name: "信義房屋"
+    type: buy
+    access_method: spa_playwright
+    base_url: "https://www.sinyi.com.tw/buy/list"
+  - name: "永慶房屋"
+    type: buy
+    access_method: spa_playwright
+    base_url: "https://www.yungching.com.tw/buy"
+  - name: "東森房屋"
+    type: buy
+    access_method: spa_playwright
+    base_url: "https://www.ethouse.com.tw/sell"
+  - name: "住商不動產"
+    type: buy
+    access_method: spa_playwright
+    base_url: "https://www.jjhouse.com.tw/sell"
+
+rental_market:
+  deposit_norm: "Typically 2 months rent as deposit (押金兩個月)"
+  tenant_protections: null  # No formal RPZ-style protections in Taiwan
+
+scoring:
+  dimensions:
+    - key: price_reasonableness
+      name_local: "價格合理性"
+      name_en: "Price Reasonableness"
+      rent_weight: 30
+      buy_weight: 35
+    - key: space_layout
+      name_local: "空間與格局"
+      name_en: "Space & Layout"
+      rent_weight: 20
+      buy_weight: 20
+    - key: location_amenities
+      name_local: "區域生活機能"
+      name_en: "Location & Amenities"
+      rent_weight: 25
+      buy_weight: 20
+    - key: property_condition
+      name_local: "物件條件"
+      name_en: "Property Condition"
+      rent_weight: 15
+      buy_weight: 15
+    - key: risk_upside
+      name_local: "風險/潛力"
+      name_en: "Risk / Upside"
+      rent_weight: 10
+      buy_weight: 10
+  interpretation:
+    excellent:
+      threshold: 4.0
+      label_local: "推薦看屋"
+      label_en: "Recommended for viewing"
+    moderate:
+      threshold: 3.5
+      label_local: "持保留態度"
+      label_en: "Worth considering with caveats"
+    poor:
+      threshold: 0
+      label_local: "建議跳過"
+      label_en: "Recommend skipping"
+
+report_labels:
+  sections:
+    price_analysis:
+      local: "價格分析"
+      en: "Price Analysis"
+    loan_calculation:
+      local: "貸款試算"
+      en: "Loan Trial Calculation"
+    commute:
+      local: "通勤試算"
+      en: "Commute Estimate"
+    dimension_scores:
+      local: "維度評分"
+      en: "Dimension Scores"
+    red_flags:
+      local: "疑點清單"
+      en: "Red Flags / Concerns"
+    viewing_questions:
+      local: "看屋問題清單"
+      en: "Viewing Questions"
+  table_headers:
+    dimension:
+      local: "維度"
+      en: "Dimension"
+    score:
+      local: "分數"
+      en: "Score"
+    key_factors:
+      local: "主要因素"
+      en: "Key Factors"
+    overall:
+      local: "綜合"
+      en: "Overall"
+    item:
+      local: "項目"
+      en: "Item"
+    value:
+      local: "數值"
+      en: "Value"
+  risk_levels:
+    high:
+      local: "高"
+      en: "High"
+    medium:
+      local: "中"
+      en: "Medium"
+    low:
+      local: "低"
+      en: "Low"
+  question_categories:
+    structure:
+      local: "結構"
+      en: "Structure"
+    equipment:
+      local: "設備"
+      en: "Equipment"
+    environment:
+      local: "環境"
+      en: "Environment"
+    legal:
+      local: "法務"
+      en: "Legal"
+    ownership:
+      local: "產權"
+      en: "Ownership"
+  type_labels:
+    rent:
+      local: "租屋"
+      en: "Rental"
+    buy:
+      local: "買屋"
+      en: "Purchase"
+  status_labels:
+    evaluated:
+      local: "已評估"
+      en: "Evaluated"
+    skip:
+      local: "略過"
+      en: "Skip"
+  inactive_listing:
+    local: "此物件已下架或不再提供。"
+    en: "This listing is no longer available."
+  phase1_pass:
+    local: "Phase 1 通過 — 開始完整評估。"
+    en: "Phase 1 passed — starting full evaluation."
+
+listing_fields:
+  title:
+    local: "標題"
+    en: "Title"
+  address:
+    local: "地址"
+    en: "Address"
+  floor:
+    local: "樓層"
+    en: "Floor"
+  total_floors:
+    local: "總樓"
+    en: "Total Floors"
+  size:
+    local: "坪數"
+    en: "Size"
+  layout:
+    local: "格局"
+    en: "Layout"
+  monthly_rent:
+    local: "月租"
+    en: "Monthly Rent"
+  deposit:
+    local: "押金"
+    en: "Deposit"
+  management_fee:
+    local: "管理費"
+    en: "Management Fee"
+  total_price:
+    local: "總價"
+    en: "Total Price"
+  parking:
+    local: "車位"
+    en: "Parking"
+  facilities:
+    local: "設備"
+    en: "Facilities"
+  building_type:
+    local: "型態"
+    en: "Building Type"
+  building_age:
+    local: "屋齡"
+    en: "Building Age"
+  owner_or_agent:
+    local: "屋主 vs 仲介"
+    en: "Owner vs Agent"
+  listing_date:
+    local: "刊登日"
+    en: "Listing Date"
+  days_on_market:
+    local: "在市場天數"
+    en: "Days on Market"
+  platform:
+    local: "平台"
+    en: "Platform"
+  elevator:
+    local: "電梯"
+    en: "Elevator"
+  land_ownership:
+    local: "土地/建物所有權"
+    en: "Land / Building Ownership"
+
+onboarding:
+  prompts:
+    search_mode: "您想找 **租屋**、**買屋**，還是 **兩者都有**？"
+    region_budget: |
+      您的目標城市和區域是哪裡？預算多少？
+      - 租屋：月租上限（TWD）
+      - 買屋：總價上限（TWD），以及每月可負擔的房貸金額
+    commute: "您的通勤目的地是哪裡？（公司地址、學校、或主要地標 — 用於篩選通勤時間。）您能接受的最長通勤時間是幾分鐘？"
+    first_time_supplement: null  # No additional questions beyond standard onboarding for first_time in TW
+    upgrader_supplement: |
+      因為您是換屋族，我需要瞭解您目前物件的幾個細節，以便進行時程與稅務試算：
+      - 目前物件預估市值（TWD）
+      - 未還房貸餘額（TWD）
+      - 購入年份
+      - 換屋策略：先賣再買、先買再賣、同步進行？
+
+listing_detection:
+  rent_signals:
+    - "月租"
+    - "月租金"
+    - "月付"
+    - "押金"
+  buy_signals:
+    - "總價"
+
+visit_checklist:
+  universal:
+    - key: water_leak
+      item_local: "漏水痕跡"
+      item_en: "Water leak traces"
+      check_local: "天花板、牆面（尤其是家具背後）、窗框周圍、浴室"
+      check_en: "Ceiling, walls (especially behind furniture), window frames, bathroom"
+    - key: mobile_signal
+      item_local: "手機訊號"
+      item_en: "Mobile signal"
+      check_local: "各個房間、廚房、衛浴都要確認訊號強度"
+      check_en: "Check signal strength in every room, kitchen, bathroom"
+    - key: natural_light
+      item_local: "採光實測"
+      item_en: "Natural light test"
+      check_local: "開所有窗簾，各房間白天採光情況；注意遮擋物（鄰棟/廣告招牌）"
+      check_en: "Open all curtains, check daytime light in each room; note obstructions (adjacent buildings, signs)"
+    - key: sound_insulation
+      item_local: "隔音測試"
+      item_en: "Sound insulation test"
+      check_local: "靜下來聽：鄰居聲、馬路噪音、電梯運轉聲"
+      check_en: "Listen quietly: neighbour noise, road noise, elevator operation"
+    - key: management_committee
+      item_local: "管委會 / 管理"
+      item_en: "Management committee"
+      check_local: "是否有管委會？月費多少？可否索取近期會議記錄？"
+      check_en: "Is there a management committee? Monthly fee? Can you get recent meeting minutes?"
+    - key: water_heater
+      item_local: "熱水器"
+      item_en: "Water heater"
+      check_local: "類型（瓦斯/電熱/太陽能）、年份、上次保養時間"
+      check_en: "Type (gas/electric/solar), age, last service date"
+    - key: plumbing
+      item_local: "水管/排水"
+      item_en: "Plumbing / drainage"
+      check_local: "同時開所有水龍頭，沖馬桶，觀察排水速度"
+      check_en: "Turn on all taps simultaneously, flush toilet, observe drainage speed"
+    - key: doors_windows
+      item_local: "門窗密封"
+      item_en: "Door and window sealing"
+      check_local: "開關每扇門窗，確認密封條完整、無異音、鎖具正常"
+      check_en: "Open and close every door/window, check seals, no unusual sounds, locks functioning"
+    - key: elevator
+      item_local: "電梯（如有）"
+      item_en: "Elevator (if present)"
+      check_local: "實際搭乘，確認運作狀況、噪音、速度"
+      check_en: "Ride it; check operation, noise, speed"
+    - key: parking
+      item_local: "停車位（如有）"
+      item_en: "Parking (if present)"
+      check_local: "確認位置、尺寸、使用方式"
+      check_en: "Confirm location, size, access method"
+  logistics: "攜帶：身分證、印章（以防需要）、相機。建議早上或中午看屋（確認採光，避免房東刻意營造的夜間照明）。帶捲尺量重要空間。確認：垃圾收集時間、停車規則、鄰居概況。"

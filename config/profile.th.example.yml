@@ -1,0 +1,64 @@
+# house-ops User Profile — Thailand
+# During onboarding, this is copied to config/profile.yml and filled in.
+# profile.yml is in the USER LAYER — it will never be overwritten by system updates.
+
+country: th                            # Country code (loads config/country/th.yml)
+
+user:
+  name: ""                          # Your name
+  commute_origin: ""                # Work/school address for commute calculation
+  commute_max_minutes: 45           # Max acceptable commute (minutes)
+  nationality: ""                   # thai | foreigner (affects ownership options)
+
+search:
+  mode: rent                        # rent | buy | both
+  buyer_type: renter                # renter | buyer | investor
+
+budget:
+  rent_max: 25000                   # Monthly rent ceiling (THB)
+  buy_max: 5000000                  # Total purchase price ceiling (THB)
+  monthly_payment_max: 20000        # Max monthly mortgage payment (THB)
+
+finance:                            # Used for buy mode
+  monthly_income: 80000             # Gross monthly income (THB)
+  savings: 500000                   # Available for down payment (THB)
+
+current_property:                   # Leave null if not applicable
+  estimated_value: null
+  loan_remaining: null
+  purchase_year: null
+  selling_strategy: sell_first
+
+property:
+  size_min: 25                      # Minimum size (m²)
+  size_max: null
+  bedrooms_min: 1
+  types:
+    include: ["condo", "apartment", "house", "townhouse", "villa"]
+    exclude: ["land", "factory", "warehouse"]
+  floor_min: null                   # Minimum floor (null = no preference)
+  parking: optional
+  pet: false
+  furnished: optional               # furnished | unfurnished | optional
+
+regions:
+  - city: "Bangkok"
+    districts: ["Sukhumvit", "Silom"]
+
+lifestyle:
+  transport_walk_max: 10            # Max walking distance to BTS/MRT (minutes)
+  priorities:
+    - bts
+    - mrt
+    - supermarket
+    - hospital
+
+narrative:
+  deal_breakers:
+    - "foreign quota full"
+    - "title deed below Chanote"
+  nice_to_have:
+    - "high floor"
+    - "city view"
+    - "near BTS"
+  notes: ""

@@ -1,0 +1,568 @@
+# Ireland Country Configuration — ie-house-ops
+# All country-specific content extracted into structured YAML.
+# This file is part of the SYSTEM LAYER and may be updated by system updates.
+
+meta:
+  code: ie
+  name: Ireland
+  name_local: "Ireland"
+  language: en
+
+market:
+  currency: EUR
+  currency_symbol: "\u20AC"
+  area_unit: sqm
+  area_unit_symbol: "m\xB2"
+  area_to_sqm: 1
+  price_per_area_label: "/m\xB2"
+  rent_period_label: "/month"
+
+regions:
+  structure: "county > city/town > area/neighbourhood. Dublin uses postal districts (D1-D24, D6W). Eircode for precise location."
+  region_codes: null  # Irish portals do not use numeric region codes
+
+property_types:
+  include:
+    - key: apartment
+      name_local: "Apartment"
+      name_en: "Apartment"
+    - key: house
+      name_local: "House"
+      name_en: "House"
+    - key: terraced
+      name_local: "Terraced house"
+      name_en: "Terraced house"
+    - key: semi_detached
+      name_local: "Semi-detached house"
+      name_en: "Semi-detached house"
+    - key: detached
+      name_local: "Detached house"
+      name_en: "Detached house"
+    - key: bungalow
+      name_local: "Bungalow"
+      name_en: "Bungalow"
+    - key: duplex
+      name_local: "Duplex"
+      name_en: "Duplex"
+    - key: studio
+      name_local: "Studio"
+      name_en: "Studio"
+  exclude:
+    - name_local: "Commercial"
+      name_en: "Commercial"
+    - name_local: "Industrial"
+      name_en: "Industrial"
+    - name_local: "Site / Land"
+      name_en: "Site / Land"
+    - name_local: "Parking space"
+      name_en: "Parking space"
+
+mortgage:
+  scenarios:
+    - key: ftb_fixed
+      name: "First-Time Buyer Fixed"
+      name_local: "First-Time Buyer Fixed"
+      name_en: "First-Time Buyer Fixed"
+      rate: 3.2
+      down_payment: 0.10
+      term_years: 30
+      eligibility: "First-time buyer only. Central Bank rules: 4x gross annual income."
+      max_loan: null  # Determined by income multiple, not a hard cap
+    - key: ftb_variable
+      name: "First-Time Buyer Variable"
+      name_local: "First-Time Buyer Variable"
+      name_en: "First-Time Buyer Variable"
+      rate: 3.8
+      down_payment: 0.10
+      term_years: 30
+      eligibility: "First-time buyer only. Central Bank rules: 4x gross annual income."
+      max_loan: null
+    - key: non_ftb_fixed
+      name: "Non-FTB Fixed"
+      name_local: "Non-FTB Fixed"
+      name_en: "Non-FTB Fixed (mover)"
+      rate: 3.2
+      down_payment: 0.20
+      term_years: 30
+      eligibility: "Non-first-time buyer. Central Bank rules: 3.5x gross annual income."
+      max_loan: null
+    - key: non_ftb_variable
+      name: "Non-FTB Variable"
+      name_local: "Non-FTB Variable"
+      name_en: "Non-FTB Variable (mover)"
+      rate: 3.8
+      down_payment: 0.20
+      term_years: 30
+      eligibility: "Non-first-time buyer. Central Bank rules: 3.5x gross annual income."
+      max_loan: null
+  affordability:
+    income_field: "finance.annual_income"
+    income_period: annual
+    payment_ceiling_pct: null  # Ireland uses income multiples, not payment-to-income ratio
+    income_multiple: 4  # FTB: 4x, non-FTB: 3.5x (differentiated by buyer_type)
+    income_multiples_by_type:
+      first_time_buyer: 4.0
+      mover: 3.5
+  buyer_types:
+    - key: renter
+      name_local: "Renter"
+      name_en: "Renter"
+    - key: first_time_buyer
+      name_local: "First-time buyer"
+      name_en: "First-time buyer"
+    - key: mover
+      name_local: "Mover"
+      name_en: "Mover (non-FTB)"
+
+government_schemes:
+  - key: help_to_buy
+    name_local: "Help to Buy (HTB)"
+    name_en: "Help to Buy"
+    description: "Tax refund for first-time buyers purchasing or self-building a new home. Up to EUR 30,000 or 10% of purchase price (whichever is lower)."
+    max_amount: 30000
+    eligibility: "First-time buyer; new build or self-build only; property value up to EUR 500,000."
+    profile_field: "finance.htb_eligible"
+  - key: first_home_scheme
+    name_local: "First Home Scheme"
+    name_en: "First Home Scheme"
+    description: "Government and participating banks take a shared equity stake of up to 30% in the property, reducing the buyer's mortgage and deposit requirement."
+    max_equity_pct: 30
+    eligibility: "First-time buyer; new build only; income and property price caps apply."
+    profile_field: "finance.fhs_eligible"
+  - key: local_authority_affordable
+    name_local: "Local Authority Affordable Purchase"
+    name_en: "Local Authority Affordable Purchase"
+    description: "Discounted homes sold through local authorities with an equity share retained by the council."
+    eligibility: "Income thresholds vary by local authority; first-time buyer or qualifying applicant."
+    profile_field: null
+
+taxes:
+  capital_gains:
+    name_local: "Capital Gains Tax (CGT)"
+    name_en: "Capital Gains Tax"
+    holding_periods: []  # No holding-period tiering in Ireland; flat rate applies
+    flat_rate: 33
+    exemptions:
+      - key: ppr
+        name_local: "Principal Private Residence (PPR) relief"
+        name_en: "PPR exemption"
+        description: "No CGT on the sale of your principal private residence."
+    annual_exemption: 1270  # EUR 1,270 annual CGT exemption per individual
+  stamp_duty:
+    name_local: "Stamp Duty"
+    name_en: "Stamp Duty"
+    rates:
+      - threshold: 1000000
+        rate: 1
+        label: "1% on first EUR 1M"
+      - threshold: null
+        rate: 2
+        label: "2% on balance above EUR 1M"
+  property_tax:
+    description: "Local Property Tax (LPT) — annual tax based on market value of the property, self-assessed. Rates set by each local authority."
+    name_local: "Local Property Tax (LPT)"
+    name_en: "Local Property Tax"
+  transaction_costs:
+    estimate_pct: 3
+    breakdown:
+      - item_local: "Stamp duty"
+        item_en: "Stamp duty"
+        typical_pct: "1-2%"
+      - item_local: "Solicitor fees"
+        item_en: "Solicitor (conveyancing) fees"
+        typical_pct: "EUR 2,000-4,000 typical"
+      - item_local: "Surveyor / valuation"
+        item_en: "Surveyor and property valuation"
+        typical_pct: "EUR 300-600"
+      - item_local: "Land Registry fees"
+        item_en: "Land Registry fees"
+        typical_pct: "EUR 400-800"
+
+building_risks:
+  - key: asbestos
+    condition: "Year built pre-1970s"
+    severity: high
+    flag_local: "Pre-1970s: asbestos risk in insulation, ceiling tiles, pipe lagging"
+    flag_en: "Pre-1970s: asbestos risk in insulation, ceiling tiles, pipe lagging"
+    viewing_action: "Commission an asbestos survey before purchase; do not disturb suspect materials"
+  - key: pyrite
+    condition: "Located in North Dublin, North Leinster, or Meath"
+    severity: high
+    flag_local: "Pyrite risk area (North Dublin / Leinster): check for heave damage in foundations and floors"
+    flag_en: "Pyrite risk area (North Dublin / Leinster): check for heave damage in foundations and floors"
+    viewing_action: "Request pyrite assessment report (IS 398); check for cracked floors, uneven surfaces, door frames out of alignment"
+  - key: mica
+    condition: "Located in Donegal or Mayo"
+    severity: high
+    flag_local: "Mica-affected area (Donegal / Mayo): defective concrete blocks causing structural cracking"
+    flag_en: "Mica-affected area (Donegal / Mayo): defective concrete blocks causing structural cracking"
+    viewing_action: "Request a mica testing report; inspect exterior walls for cracking patterns; verify if remediation has been done"
+  - key: no_ber
+    condition: "No BER certificate provided"
+    severity: medium
+    flag_local: "No BER certificate: energy performance unknown, legally required for sale/rent"
+    flag_en: "No BER certificate: energy performance unknown, legally required for sale/rent"
+    viewing_action: "Request BER cert before proceeding; absence may indicate poor energy rating or non-compliance"
+  - key: unauthorised_extension
+    condition: "Extension or conversion without planning permission"
+    severity: high
+    flag_local: "Unauthorised extension: may not be covered by insurance, affects resale and mortgage approval"
+    flag_en: "Unauthorised extension: may not be covered by insurance, affects resale and mortgage approval"
+    viewing_action: "Request planning permission records and commencement notice; verify with local authority"
+
+transport:
+  systems:
+    - key: luas_green
+      name_local: "Luas (Green Line)"
+      name_en: "Luas Green Line"
+    - key: luas_red
+      name_local: "Luas (Red Line)"
+      name_en: "Luas Red Line"
+    - key: dart
+      name_local: "DART"
+      name_en: "DART (Dublin Area Rapid Transit)"
+    - key: dublin_bus
+      name_local: "Dublin Bus"
+      name_en: "Dublin Bus"
+    - key: irish_rail
+      name_local: "Irish Rail"
+      name_en: "Irish Rail"
+
+address_normalization:
+  rules:
+    - description: "Road suffix normalisation"
+      examples: "Road / Rd / Rd. -> Rd"
+    - description: "Street suffix normalisation"
+      examples: "Street / St / St. -> St"
+    - description: "Avenue suffix normalisation"
+      examples: "Avenue / Ave / Ave. -> Ave"
+    - description: "Dublin postal district normalisation"
+      examples: "Dublin 2 / D2 / D02 -> D2"
+    - description: "Case-insensitive matching"
+      examples: "RANELAGH / Ranelagh / ranelagh -> ranelagh"
+
+market_reference:
+  price_register:
+    name_local: "Property Price Register"
+    name_en: "Property Price Register"
+    url: "https://www.propertypriceregister.ie"
+    lookback_months: 6
+    description: "Statutory register of residential property sale prices in Ireland"
+  key_metrics:
+    - key: rent_per_area
+      label_local: "Rent per m\xB2 per month"
+      label_en: "Rent per sqm per month"
+    - key: buy_per_area
+      label_local: "Price per m\xB2"
+      label_en: "Price per sqm"
+  ber_ratings:
+    description: "Building Energy Rating from A1 (most efficient) to G (least efficient). Affects energy costs and resale value."
+    scale: ["A1", "A2", "A3", "B1", "B2", "B3", "C1", "C2", "C3", "D1", "D2", "E1", "E2", "F", "G"]
+    good_threshold: "B3"  # B3 or better is considered good
+    note: "BER cert is legally required for sale or rental listings"
+
+portals:
+  - name: "Daft.ie"
+    type: both
+    access_method: standard_web
+    base_url: "https://www.daft.ie"
+  - name: "MyHome.ie"
+    type: both
+    access_method: standard_web
+    base_url: "https://www.myhome.ie"
+  - name: "Property.ie"
+    type: both
+    access_method: standard_web
+    base_url: "https://www.property.ie"
+
+rental_market:
+  deposit_norm: "Typically 1 month rent as deposit"
+  tenant_protections: |
+    Rent Pressure Zones (RPZ): rent increases capped at 2% per year in designated areas.
+    Residential Tenancies Board (RTB): mandatory registration of all tenancies; dispute resolution.
+    HAP (Housing Assistance Payment): local authority rental subsidy for qualifying tenants.
+    Minimum notice periods based on tenancy duration. Part 4 tenancy rights after 6 months.
+
+scoring:
+  dimensions:
+    - key: price_reasonableness
+      name_local: "Price Reasonableness"
+      name_en: "Price Reasonableness"
+      rent_weight: 30
+      buy_weight: 35
+    - key: space_layout
+      name_local: "Space & Layout"
+      name_en: "Space & Layout"
+      rent_weight: 20
+      buy_weight: 20
+    - key: location_amenities
+      name_local: "Location & Amenities"
+      name_en: "Location & Amenities"
+      rent_weight: 25
+      buy_weight: 20
+    - key: property_condition
+      name_local: "Property Condition"
+      name_en: "Property Condition"
+      rent_weight: 15
+      buy_weight: 15
+    - key: risk_upside
+      name_local: "Risk / Upside"
+      name_en: "Risk / Upside"
+      rent_weight: 10
+      buy_weight: 10
+  interpretation:
+    excellent:
+      threshold: 4.0
+      label_local: "Recommended for viewing"
+      label_en: "Recommended for viewing"
+    moderate:
+      threshold: 3.5
+      label_local: "Worth considering with caveats"
+      label_en: "Worth considering with caveats"
+    poor:
+      threshold: 0
+      label_local: "Recommend skipping"
+      label_en: "Recommend skipping"
+
+report_labels:
+  sections:
+    price_analysis:
+      local: "Price Analysis"
+      en: "Price Analysis"
+    loan_calculation:
+      local: "Mortgage Calculation"
+      en: "Mortgage Calculation"
+    commute:
+      local: "Commute Estimate"
+      en: "Commute Estimate"
+    dimension_scores:
+      local: "Dimension Scores"
+      en: "Dimension Scores"
+    red_flags:
+      local: "Red Flags / Concerns"
+      en: "Red Flags / Concerns"
+    viewing_questions:
+      local: "Viewing Questions"
+      en: "Viewing Questions"
+  table_headers:
+    dimension:
+      local: "Dimension"
+      en: "Dimension"
+    score:
+      local: "Score"
+      en: "Score"
+    key_factors:
+      local: "Key Factors"
+      en: "Key Factors"
+    overall:
+      local: "Overall"
+      en: "Overall"
+    item:
+      local: "Item"
+      en: "Item"
+    value:
+      local: "Value"
+      en: "Value"
+  risk_levels:
+    high:
+      local: "High"
+      en: "High"
+    medium:
+      local: "Medium"
+      en: "Medium"
+    low:
+      local: "Low"
+      en: "Low"
+  question_categories:
+    structure:
+      local: "Structure"
+      en: "Structure"
+    equipment:
+      local: "Fixtures & Fittings"
+      en: "Fixtures & Fittings"
+    environment:
+      local: "Environment"
+      en: "Environment"
+    legal:
+      local: "Legal"
+      en: "Legal"
+    ownership:
+      local: "Title / Ownership"
+      en: "Title / Ownership"
+  type_labels:
+    rent:
+      local: "Rental"
+      en: "Rental"
+    buy:
+      local: "Purchase"
+      en: "Purchase"
+  status_labels:
+    evaluated:
+      local: "Evaluated"
+      en: "Evaluated"
+    skip:
+      local: "Skip"
+      en: "Skip"
+  inactive_listing:
+    local: "This listing is no longer available."
+    en: "This listing is no longer available."
+  phase1_pass:
+    local: "Phase 1 passed — starting full evaluation."
+    en: "Phase 1 passed — starting full evaluation."
+
+listing_fields:
+  title:
+    local: "Title"
+    en: "Title"
+  address:
+    local: "Address"
+    en: "Address"
+  floor:
+    local: "Floor"
+    en: "Floor"
+  total_floors:
+    local: "Total Floors"
+    en: "Total Floors"
+  size:
+    local: "Size"
+    en: "Size"
+  layout:
+    local: "Layout"
+    en: "Layout (beds/baths)"
+  monthly_rent:
+    local: "Monthly Rent"
+    en: "Monthly Rent"
+  deposit:
+    local: "Deposit"
+    en: "Deposit"
+  management_fee:
+    local: "Service Charge"
+    en: "Service Charge"
+  total_price:
+    local: "Asking Price"
+    en: "Asking Price"
+  parking:
+    local: "Parking"
+    en: "Parking"
+  facilities:
+    local: "Facilities"
+    en: "Facilities"
+  building_type:
+    local: "Property Type"
+    en: "Property Type"
+  building_age:
+    local: "Year Built"
+    en: "Year Built"
+  owner_or_agent:
+    local: "Private / Agent"
+    en: "Private / Agent"
+  listing_date:
+    local: "Date Listed"
+    en: "Date Listed"
+  days_on_market:
+    local: "Days on Market"
+    en: "Days on Market"
+  platform:
+    local: "Platform"
+    en: "Platform"
+  elevator:
+    local: "Lift"
+    en: "Lift / Elevator"
+  land_ownership:
+    local: "Tenure"
+    en: "Tenure (freehold / leasehold)"
+  ber_rating:
+    local: "BER Rating"
+    en: "BER Rating"
+  ber_number:
+    local: "BER Number"
+    en: "BER Number"
+
+onboarding:
+  prompts:
+    search_mode: "Are you looking to **rent**, **buy**, or **both**?"
+    region_budget: |
+      Which counties, cities, or areas are you targeting? And what's your budget?
+      - For rent: monthly ceiling in EUR
+      - For buy: total price ceiling in EUR, and your gross annual income (for Central Bank lending rules)
+    commute: "Where do you commute to? (Work address, office, or landmark -- used to filter by commute time.) What's the maximum commute you'd accept in minutes?"
+    first_time_supplement: |
+      Since you're a first-time buyer, a few extra questions:
+      - Are you eligible for Help to Buy (HTB)? (New build or self-build only)
+      - Are you interested in the First Home Scheme (shared equity)?
+      - Gross annual income (for Central Bank 4x income rule)
+    upgrader_supplement: |
+      Since you're moving from an existing property:
+      - Estimated current market value (EUR)
+      - Outstanding mortgage balance (EUR)
+      - Year you purchased it
+      - Strategy: sell first, buy first, or simultaneous?
+
+listing_detection:
+  rent_signals:
+    - "per month"
+    - "pcm"
+    - "p.m."
+    - "/month"
+    - "to let"
+    - "to rent"
+  buy_signals:
+    - "asking price"
+    - "price on application"
+    - "guide price"
+    - "for sale"
+    - "AMV"
+
+visit_checklist:
+  universal:
+    - key: dampness
+      item_local: "Dampness / damp"
+      item_en: "Dampness and damp"
+      check_local: "Check walls, ceilings (especially corners), around windows, and under sinks for damp patches, mould, or musty smells"
+      check_en: "Check walls, ceilings (especially corners), around windows, and under sinks for damp patches, mould, or musty smells"
+    - key: mobile_signal
+      item_local: "Mobile signal"
+      item_en: "Mobile signal"
+      check_local: "Check signal strength in every room, kitchen, bathroom"
+      check_en: "Check signal strength in every room, kitchen, bathroom"
+    - key: natural_light
+      item_local: "Natural light"
+      item_en: "Natural light"
+      check_local: "Open all curtains/blinds; check daytime light in each room; note which direction windows face"
+      check_en: "Open all curtains/blinds; check daytime light in each room; note which direction windows face"
+    - key: sound_insulation
+      item_local: "Noise levels"
+      item_en: "Noise levels"
+      check_local: "Listen for neighbour noise, road traffic, flight paths; check soundproofing between units"
+      check_en: "Listen for neighbour noise, road traffic, flight paths; check soundproofing between units"
+    - key: management_company
+      item_local: "Management company"
+      item_en: "Management company / OMC"
+      check_local: "Is there an Owners' Management Company? Annual service charge? Sinking fund status? Any planned levies?"
+      check_en: "Is there an Owners' Management Company? Annual service charge? Sinking fund status? Any planned levies?"
+    - key: heating
+      item_local: "Heating system"
+      item_en: "Heating system"
+      check_local: "Type (gas / oil / electric / heat pump); age of boiler; last service date; BER rating implications"
+      check_en: "Type (gas / oil / electric / heat pump); age of boiler; last service date; BER rating implications"
+    - key: plumbing
+      item_local: "Plumbing / drainage"
+      item_en: "Plumbing and drainage"
+      check_local: "Run taps and flush toilets; check water pressure; look for signs of old lead pipes"
+      check_en: "Run taps and flush toilets; check water pressure; look for signs of old lead pipes"
+    - key: doors_windows
+      item_local: "Windows and doors"
+      item_en: "Windows and doors"
+      check_local: "Double or triple glazing? Open and close all windows/doors; check seals, draughts, and locks"
+      check_en: "Double or triple glazing? Open and close all windows/doors; check seals, draughts, and locks"
+    - key: lift
+      item_local: "Lift (if apartment)"
+      item_en: "Lift / elevator (if apartment)"
+      check_local: "Ride it; check operation and speed; note if it serves all floors"
+      check_en: "Ride it; check operation and speed; note if it serves all floors"
+    - key: parking
+      item_local: "Parking"
+      item_en: "Parking"
+      check_local: "Designated space? On-street permit needed? Visitor parking availability?"
+      check_en: "Designated space? On-street permit needed? Visitor parking availability?"
+  logistics: "Bring: photo ID, phone/camera, tape measure. Visit during daylight hours to assess natural light and neighbourhood. Check broadband availability (SIRO/NBI map). Note bin collection day, local amenities, nearest public transport stop."

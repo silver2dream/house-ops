@@ -1,0 +1,58 @@
+# house-ops Portal Configuration — Ireland
+# Copied to portals.yml during onboarding.
+
+title_filter:
+  property_types:
+    include: ["apartment", "semi-detached", "detached", "terraced", "townhouse", "bungalow"]
+    exclude: ["site", "commercial", "industrial"]
+  price:
+    rent_max: 4000
+    buy_max: 1000000
+  size_min: 30
+
+tracked_portals:
+  - name: "Daft.ie Rent"
+    type: rent
+    enabled: true
+    url_template: "https://www.daft.ie/property-for-rent/{county}?rentalPrice_to={rent_max}&floorArea_from={size_min}"
+
+  - name: "Daft.ie Buy"
+    type: buy
+    enabled: true
+    url_template: "https://www.daft.ie/property-for-sale/{county}?salePrice_to={buy_max}&floorArea_from={size_min}"
+
+  - name: "MyHome.ie Buy"
+    type: buy
+    enabled: true
+    base_url: "https://www.myhome.ie/residential/search"
+
+  - name: "Property.ie Buy"
+    type: buy
+    enabled: true
+    base_url: "https://www.property.ie/property-for-sale/"
+
+  - name: "SherryFitzGerald"
+    type: buy
+    enabled: true
+    base_url: "https://www.sherryfitz.ie/buy"
+
+  - name: "Lisney"
+    type: buy
+    enabled: true
+    base_url: "https://www.lisney.com/residential/sale"
+
+market_reference:
+  ppr:
+    enabled: true
+    use_for: price_comparison
+
+search_queries:
+  - name: "Daft rent discovery"
+    query: "site:daft.ie {areas} to rent {rent_max}"
+    enabled: true
+  - name: "Daft buy discovery"
+    query: "site:daft.ie {areas} for sale {buy_max}"
+    enabled: true
+  - name: "MyHome buy discovery"
+    query: "site:myhome.ie {areas} for sale"
+    enabled: true

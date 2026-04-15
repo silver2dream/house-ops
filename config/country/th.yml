@@ -1,0 +1,670 @@
+# Thailand Country Configuration
+# Part of the multi-country house-ops system.
+# Schema matches tw.yml and ie.yml — all sections required.
+
+# ─────────────────────────────────────────────
+# META
+# ─────────────────────────────────────────────
+
+meta:
+  code: th
+  name: "Thailand"
+  name_local: "ประเทศไทย"
+  language: "th"
+
+# ─────────────────────────────────────────────
+# MARKET
+# ─────────────────────────────────────────────
+
+market:
+  currency:
+    code: THB
+    symbol: "฿"
+    format: "{symbol}{amount}"          # e.g. ฿3,500,000
+  area_units:
+    primary: sqm                        # ตารางเมตร — used for condos/apartments
+    primary_label: "ตร.ม."
+    primary_full: "ตารางเมตร"
+    land:
+      - unit: sq_wah
+        label: "ตร.วา"
+        full: "ตารางวา"
+        to_sqm: 4                       # 1 sq wah = 4 sqm
+      - unit: ngan
+        label: "งาน"
+        full: "งาน"
+        to_sqm: 400                     # 1 ngan = 400 sqm = 100 sq wah
+      - unit: rai
+        label: "ไร่"
+        full: "ไร่"
+        to_sqm: 1600                    # 1 rai = 1600 sqm = 4 ngan = 400 sq wah
+
+# ─────────────────────────────────────────────
+# REGIONS
+# ─────────────────────────────────────────────
+
+regions:
+  bangkok:
+    name: "Bangkok"
+    name_local: "กรุงเทพมหานคร"
+    districts:
+      - name: "Sukhumvit"
+        name_local: "สุขุมวิท"
+      - name: "Silom"
+        name_local: "สีลม"
+      - name: "Sathorn"
+        name_local: "สาทร"
+      - name: "Thonglor"
+        name_local: "ทองหล่อ"
+      - name: "Ari"
+        name_local: "อารีย์"
+      - name: "Phrom Phong"
+        name_local: "พร้อมพงษ์"
+      - name: "Ekkamai"
+        name_local: "เอกมัย"
+      - name: "On Nut"
+        name_local: "อ่อนนุช"
+      - name: "Bang Na"
+        name_local: "บางนา"
+      - name: "Lat Phrao"
+        name_local: "ลาดพร้าว"
+      - name: "Ratchada"
+        name_local: "รัชดา"
+      - name: "Riverside"
+        name_local: "ริเวอร์ไซด์"
+
+  other_cities:
+    - name: "Chiang Mai"
+      name_local: "เชียงใหม่"
+    - name: "Phuket"
+      name_local: "ภูเก็ต"
+    - name: "Pattaya"
+      name_local: "พัทยา"
+    - name: "Hua Hin"
+      name_local: "หัวหิน"
+    - name: "Koh Samui"
+      name_local: "เกาะสมุย"
+
+# ─────────────────────────────────────────────
+# PROPERTY TYPES
+# ─────────────────────────────────────────────
+
+property_types:
+  include:
+    - code: condo
+      label: "Condo"
+      label_local: "คอนโด"
+      notes: "Foreigners can own freehold (49% foreign quota per building)"
+    - code: apartment
+      label: "Apartment"
+      label_local: "อพาร์ทเมนท์"
+      notes: "Rental only — no individual unit ownership"
+    - code: detached_house
+      label: "Detached House"
+      label_local: "บ้านเดี่ยว"
+      notes: "On land — foreigners cannot own"
+    - code: townhouse
+      label: "Townhouse"
+      label_local: "ทาวน์เฮ้าส์"
+      notes: "On land — foreigners cannot own"
+    - code: shophouse
+      label: "Shophouse"
+      label_local: "ตึกแถว"
+      notes: "Commercial + residential mixed use"
+    - code: villa
+      label: "Villa"
+      label_local: "วิลล่า"
+      notes: "Luxury — usually resort areas (Phuket, Koh Samui, Hua Hin)"
+    - code: twin_house
+      label: "Twin House"
+      label_local: "บ้านแฝด"
+      notes: "Semi-detached — on land, foreigners cannot own"
+    - code: land
+      label: "Land"
+      label_local: "ที่ดิน"
+      notes: "Foreigners cannot own — leasehold or company structure only"
+  exclude:
+    - "land-only (ที่ดินเปล่า)"
+    - "factory (โรงงาน)"
+    - "warehouse (โกดัง)"
+
+# ─────────────────────────────────────────────
+# MORTGAGE
+# ─────────────────────────────────────────────
+
+mortgage:
+  thai_nationals:
+    ltv_first_home: "80-90%"
+    rates:
+      fixed_promo: "2.9-3.3%"           # Introductory fixed rate (1-3 years)
+      floating: "5-7%"                   # After promo period, floating MRR-based
+    term_max_years: 30
+    down_payment: "10-20%"
+
+  foreigners:
+    ltv: "50-70%"
+    rates: "3.5-7%"
+    term_max_years: 15                   # Some banks up to 20 years
+    down_payment: "30-50%"
+    notes: "Few Thai banks lend to foreigners. UOB, ICBC, CIMB Thai have foreign programs. Proof of income and work permit typically required."
+
+  buyer_types:
+    - code: renter
+      label: "Renter"
+      label_local: "ผู้เช่า"
+    - code: buyer
+      label: "Buyer"
+      label_local: "ผู้ซื้อ"
+    - code: investor
+      label: "Investor"
+      label_local: "นักลงทุน"
+
+  government_schemes:
+    - name: "Government Housing Bank (GHB)"
+      name_local: "ธนาคารอาคารสงเคราะห์ (ธอส.)"
+      rate: "~3%"
+      eligibility: "Thai nationals"
+      notes: "Subsidized rate for low-to-mid income earners; primary residence requirement"
+    - name: "Homes for Thais"
+      name_local: "บ้านคนไทย"
+      eligibility: "Thai nationals, first-time buyers"
+      notes: "Affordable housing near mass transit; government-subsidized pricing"
+
+# ─────────────────────────────────────────────
+# TAXES
+# ─────────────────────────────────────────────
+
+taxes:
+  transaction:
+    transfer_fee:
+      rate: "2%"
+      paid_by: "Split 50/50 buyer/seller (negotiable)"
+      notes: "Based on appraised or registered value, whichever is higher"
+    stamp_duty:
+      rate: "0.5%"
+      paid_by: "Seller"
+      condition: "Only if property held >5 years (otherwise SBT applies instead)"
+    specific_business_tax:
+      rate: "3.3%"
+      paid_by: "Seller"
+      condition: "If sold within 5 years of acquisition — replaces stamp duty"
+      notes: "3% tax + 10% local surcharge = 3.3% effective"
+    withholding_tax:
+      rate: "1-5%"
+      paid_by: "Seller"
+      notes: "Progressive rate based on appraised value and holding period; deducted at Land Office"
+    total_transaction_cost: "~2.5-6.3%"
+
+  annual:
+    property_tax:
+      residential: "0.02-0.1%"
+      primary_home_exemption: "Exempt if primary home valued <50M THB"
+      notes: "Land and Building Tax Act (2020). Rates increase with property value."
+
+  rental_income:
+    residents: "Progressive 0-35%"
+    non_residents: "15% flat withholding"
+    notes: "Rental income must be declared in annual PND.90/91 tax return"
+
+# ─────────────────────────────────────────────
+# FOREIGN OWNERSHIP
+# ─────────────────────────────────────────────
+
+foreign_ownership:
+  condo:
+    ownership_type: "Freehold"
+    quota: "49% of total saleable area per building"
+    requirements:
+      - "Funds must be remitted from overseas in foreign currency"
+      - "Foreign Exchange Transaction (FET) form required from receiving bank"
+      - "FET must show purpose as 'purchase of condominium'"
+    risks:
+      - "49% quota may already be full — always verify with juristic office before committing"
+
+  land:
+    ownership_type: "CANNOT own"
+    alternatives:
+      - "Leasehold: max 30 years, renewable (registration at Land Office required for >3yr leases)"
+      - "Usufruct: right to use/enjoy property for lifetime or fixed term"
+      - "Superficies: right to own building on someone else's land"
+    warnings:
+      - "Thai company nominee structure is ILLEGAL under the Foreign Business Act"
+      - "Confiscation risk if nominee arrangement is discovered"
+      - "BOI-promoted companies may have limited land ownership rights"
+
+  house_townhouse:
+    ownership_type: "Cannot own directly (land component)"
+    alternatives:
+      - "Leasehold (30yr max, renewable)"
+      - "Usufruct agreement"
+      - "Marriage to Thai national (spouse holds title)"
+    warnings:
+      - "Thai company method for holding land is illegal and carries confiscation risk"
+
+  title_deeds:
+    - code: chanote
+      label: "Chanote (โฉนด / น.ส.4 จ.)"
+      quality: "Best"
+      notes: "GPS-surveyed, full private ownership, freely transferable"
+    - code: nor_sor_3_gor
+      label: "Nor Sor 3 Gor (น.ส.3 ก.)"
+      quality: "Good"
+      notes: "Aerial-surveyed, freely transferable, nearly equivalent to Chanote"
+    - code: nor_sor_3
+      label: "Nor Sor 3 (น.ส.3)"
+      quality: "Medium"
+      notes: "30-day public notice required before transfer; boundaries less precise"
+    - code: sor_kor_1
+      label: "Sor Kor 1 (ส.ค.1)"
+      quality: "Avoid"
+      notes: "Mere notification of possession — not a title, cannot be sold/mortgaged"
+    - code: por_bor_tor_5
+      label: "Por Bor Tor 5 (ภ.บ.ท.5)"
+      quality: "Avoid"
+      notes: "Tax receipt only — indicates land tax payment, NOT ownership"
+
+# ─────────────────────────────────────────────
+# BUILDING RISKS
+# ─────────────────────────────────────────────
+
+building_risks:
+  - code: flood_risk
+    label: "Flood Risk"
+    label_local: "ความเสี่ยงน้ำท่วม"
+    severity: high
+    description: "Bangkok sits at ~1.5m above sea level; monsoon floods every 3-5 years"
+    high_risk_areas:
+      - "North Bangkok"
+      - "Pathum Thani (ปทุมธานี)"
+      - "Nonthaburi (นนทบุรี)"
+      - "Don Mueang (ดอนเมือง)"
+    reference_url: "https://cpudgiportal.bangkok.go.th/"
+    action: "Check flood maps before purchase; ask building management about flood history"
+
+  - code: foreign_quota_full
+    label: "Foreign Quota Full"
+    label_local: "โควต้าต่างชาติเต็ม"
+    severity: high
+    description: "49% foreign condo ownership limit exceeded — cannot register freehold transfer"
+    action: "Verify quota status with building juristic office BEFORE signing any contract"
+
+  - code: title_deed_type
+    label: "Title Deed Risk"
+    label_local: "ความเสี่ยงเอกสารสิทธิ์"
+    severity: high
+    description: "Anything below Chanote or Nor Sor 3 Gor carries significant legal risk"
+    action: "Request copy of title deed; verify at Land Office (สำนักงานที่ดิน)"
+
+  - code: nominee_company
+    label: "Nominee Company Structure"
+    label_local: "บริษัทนอมินี"
+    severity: critical
+    description: "Using Thai nominees to hold land for foreigners is illegal under the Foreign Business Act"
+    action: "AVOID — confiscation risk and criminal penalties"
+
+  - code: offplan_developer_risk
+    label: "Off-Plan Developer Risk"
+    label_local: "ความเสี่ยงโครงการสร้างใหม่"
+    severity: high
+    description: "No mandatory escrow for off-plan payments in Thailand; developer may default"
+    action: "Research developer track record; check SEC filings; prefer listed developers (SET)"
+
+  - code: unregistered_lease
+    label: "Unregistered Leasehold"
+    label_local: "สัญญาเช่าไม่จดทะเบียน"
+    severity: high
+    description: "Leases >3 years MUST be registered at the Land Office to be enforceable"
+    action: "Verify lease registration; unregistered long-term leases are legally unenforceable beyond 3 years"
+
+  - code: common_scams
+    label: "Common Scams"
+    label_local: "การหลอกลวงที่พบบ่อย"
+    severity: high
+    description: "Selling over-quota condos to foreigners, fake title deeds, unregistered leases"
+    action: "Always verify title at Land Office; check foreign quota; use reputable lawyer"
+
+# ─────────────────────────────────────────────
+# TRANSPORT (BANGKOK)
+# ─────────────────────────────────────────────
+
+transport:
+  city: "Bangkok"
+  systems:
+    - code: bts
+      label: "BTS Skytrain"
+      label_local: "รถไฟฟ้า BTS"
+      lines:
+        - name: "Sukhumvit Line"
+          color: "Light Green"
+          stations: 47
+          key_stations: ["Siam", "Asok", "Phrom Phong", "Thong Lo", "Ekkamai", "On Nut", "Mo Chit"]
+        - name: "Silom Line"
+          color: "Dark Green"
+          stations: 14
+          key_stations: ["Siam", "Sala Daeng", "Saphan Taksin", "Bang Wa"]
+        - name: "Gold Line"
+          color: "Gold"
+          stations: 3
+          key_stations: ["Krung Thon Buri"]
+
+    - code: mrt
+      label: "MRT"
+      label_local: "รถไฟฟ้า MRT"
+      lines:
+        - name: "Blue Line"
+          type: "Underground loop"
+          key_stations: ["Sukhumvit", "Si Lom", "Hua Lamphong", "Chatuchak Park", "Lat Phrao"]
+        - name: "Purple Line"
+          type: "Elevated"
+          area: "Nonthaburi"
+          key_stations: ["Tao Poon", "Khlong Bang Phai"]
+        - name: "Yellow Line"
+          type: "Monorail"
+          key_stations: ["Lat Phrao", "Samrong"]
+        - name: "Pink Line"
+          type: "Monorail"
+          key_stations: ["Khae Rai", "Min Buri"]
+
+    - code: arl
+      label: "Airport Rail Link"
+      label_local: "แอร์พอร์ต เรล ลิงก์"
+      stations: 8
+      route: "Phaya Thai to Suvarnabhumi Airport"
+      key_stations: ["Phaya Thai", "Makkasan", "Suvarnabhumi"]
+
+  interchanges:
+    - name: "Siam"
+      connects: ["BTS Sukhumvit Line", "BTS Silom Line"]
+    - name: "Asok / Sukhumvit"
+      connects: ["BTS Sukhumvit Line", "MRT Blue Line"]
+    - name: "Sala Daeng / Si Lom"
+      connects: ["BTS Silom Line", "MRT Blue Line"]
+    - name: "Mo Chit / Chatuchak Park"
+      connects: ["BTS Sukhumvit Line", "MRT Blue Line"]
+    - name: "Phaya Thai"
+      connects: ["BTS Sukhumvit Line", "Airport Rail Link"]
+
+  boats:
+    - name: "Chao Phraya Express"
+      name_local: "เรือด่วนเจ้าพระยา"
+      route: "Nonthaburi to Wat Rajsingkorn"
+    - name: "Khlong Saen Saep Canal Boat"
+      name_local: "เรือคลองแสนแสบ"
+      route: "Phan Fa Bridge to Wat Si Bun Rueang (East) / Min Buri (East extension)"
+
+# ─────────────────────────────────────────────
+# ADDRESS NORMALIZATION
+# ─────────────────────────────────────────────
+
+address_normalization:
+  rules:
+    - id: 1
+      description: "Normalize soi numbers"
+      examples:
+        - from: "ซอย 55"
+          to: "Soi 55"
+        - from: "Soi 55"
+          to: "Soi 55"
+        - from: "Sukhumvit 55"
+          to: "Soi 55"
+    - id: 2
+      description: "Normalize Thai/English name variants"
+      examples:
+        - from: "สุขุมวิท"
+          to: "Sukhumvit"
+        - from: "สีลม"
+          to: "Silom"
+        - from: "สาทร"
+          to: "Sathorn"
+    - id: 3
+      description: "Normalize floor notation"
+      examples:
+        - from: "ชั้น 15"
+          to: "15F"
+        - from: "15F"
+          to: "15F"
+        - from: "Floor 15"
+          to: "15F"
+    - id: 4
+      description: "Normalize building names — collapse spacing and transliteration"
+      examples:
+        - from: "เดอะ ไลน์ สุขุมวิท"
+          to: "The Line Sukhumvit"
+    - id: 5
+      description: "Case-insensitive matching"
+      notes: "All comparisons are case-insensitive after normalization"
+
+# ─────────────────────────────────────────────
+# MARKET REFERENCE
+# ─────────────────────────────────────────────
+
+market_reference:
+  public_transaction_register: false     # Thailand has NO public transaction price register
+  sources:
+    - name: "REIC (Real Estate Information Center)"
+      name_local: "ศูนย์ข้อมูลอสังหาริมทรัพย์"
+      use_for: "Market indices, supply/demand trends"
+      url: "https://www.reic.or.th/"
+    - name: "Treasury Department Land Appraisal"
+      name_local: "ราคาประเมินกรมธนารักษ์"
+      use_for: "Official land appraisal values (typically 20-40% below market)"
+      url: "https://property.treasury.go.th/"
+      notes: "Used as basis for transfer fee/tax calculation at Land Office"
+    - name: "Cross-portal comparison"
+      use_for: "Estimate market value by comparing same unit/building across DDproperty, Hipflat, FazWaz"
+    - name: "Hipflat building data"
+      use_for: "Building-level historical pricing, unit transaction history"
+      url: "https://www.hipflat.co.th/"
+      notes: "Best source for building-specific price trends in Bangkok condos"
+
+# ─────────────────────────────────────────────
+# RENTAL MARKET
+# ─────────────────────────────────────────────
+
+rental_market:
+  deposit_months: "1-2"
+  advance_months: 1                      # 1 month paid at signing
+  total_upfront_months: "2-3"            # deposit + advance
+  agent_fee: "Usually paid by landlord (1 month rent)"
+  utilities:
+    - "Electricity (ค่าไฟ) — paid separately"
+    - "Water (ค่าน้ำ) — paid separately"
+    - "Internet (ค่าเน็ต) — paid separately"
+    - "Common area fee (ค่าส่วนกลาง) — may be included or separate"
+  standard_term_months: 12
+  rent_increase_cap: null                # No legal cap — market-driven
+  foreigner_restrictions: "None — foreigners can rent freely"
+  notes: "Condo common area fees (ค่าส่วนกลาง) are sometimes included in rent, sometimes not — always clarify"
+
+# ─────────────────────────────────────────────
+# PORTALS
+# ─────────────────────────────────────────────
+
+portals:
+  - name: "DDproperty"
+    url: "https://www.ddproperty.com/"
+    type: [rent, buy]
+    language: [th, en]
+    rendering: SPA
+    notes: "#1 portal in Thailand; PropertyGuru group"
+  - name: "FazWaz"
+    url: "https://www.fazwaz.com/"
+    type: [rent, buy]
+    language: [en, th]
+    rendering: SPA
+    notes: "Expat-focused, English-first interface"
+  - name: "Hipflat"
+    url: "https://www.hipflat.co.th/"
+    type: [rent, buy]
+    language: [th, en]
+    rendering: SPA
+    notes: "Excellent building-level data and historical pricing"
+  - name: "Dot Property"
+    url: "https://www.dotproperty.co.th/"
+    type: [rent, buy]
+    language: [th, en]
+    rendering: SPA
+    notes: "Regional coverage across Southeast Asia"
+  - name: "Thailand-Property.com"
+    url: "https://www.thailand-property.com/"
+    type: [rent, buy]
+    language: [en]
+    rendering: SPA
+    notes: "Foreigner-focused, English-only"
+  - name: "PropertyScout"
+    url: "https://www.propertyscout.co.th/"
+    type: [rent]
+    language: [th, en]
+    rendering: SPA
+    notes: "Rental-focused, verified listings"
+  - name: "Kaidee / Baan Kaidee"
+    url: "https://www.kaidee.com/"
+    type: [rent, buy]
+    language: [th]
+    rendering: SPA
+    notes: "Classifieds platform, Thai-primary; higher scam risk — verify listings carefully"
+  - name: "BahtSold"
+    url: "https://www.bahtsold.com/"
+    type: [rent, buy]
+    language: [en]
+    rendering: server
+    notes: "Expat classifieds, server-rendered; community-driven"
+
+# ─────────────────────────────────────────────
+# SCORING
+# ─────────────────────────────────────────────
+
+scoring:
+  dimensions:
+    - code: price_reasonableness
+      label: "Price Reasonableness"
+      label_local: "ความสมเหตุสมผลของราคา"
+      weight_rent: 30
+      weight_buy: 35
+    - code: space_layout
+      label: "Space & Layout"
+      label_local: "พื้นที่และผัง"
+      weight_rent: 20
+      weight_buy: 20
+    - code: location_amenities
+      label: "Location & Amenities"
+      label_local: "ทำเลและสิ่งอำนวยความสะดวก"
+      weight_rent: 25
+      weight_buy: 20
+    - code: property_condition
+      label: "Property Condition"
+      label_local: "สภาพทรัพย์สิน"
+      weight_rent: 15
+      weight_buy: 15
+    - code: risk_upside
+      label: "Risk / Upside"
+      label_local: "ความเสี่ยง/ศักยภาพ"
+      weight_rent: 10
+      weight_buy: 10
+
+  buyer_type_adjustments:
+    renter:
+      notes: "Standard rent weights; verify lease registration for leases >1 year"
+    buyer:
+      notes: "Add foreign ownership check (49% quota verification), title deed type verification, flood risk assessment"
+    investor:
+      notes: "Add rental yield calculation, foreign quota status, developer reputation check, resale liquidity"
+
+  interpretation:
+    recommend: 4.0                       # >= 4.0: recommend viewing
+    cautious: 3.5                        # 3.5-3.9: proceed with caution
+    skip: 3.5                            # < 3.5: recommend skipping
+
+# ─────────────────────────────────────────────
+# LISTING DETECTION
+# ─────────────────────────────────────────────
+
+listing_detection:
+  rent_signals:
+    - "เช่า"
+    - "ให้เช่า"
+    - "for rent"
+    - "/เดือน"
+    - "per month"
+    - "ค่าเช่า"
+  buy_signals:
+    - "ขาย"
+    - "ขายดาวน์"
+    - "for sale"
+    - "ราคาขาย"
+    - "asking price"
+  ambiguous_action: "ask_user"
+
+# ─────────────────────────────────────────────
+# VISIT CHECKLIST (THAILAND-SPECIFIC)
+# ─────────────────────────────────────────────
+
+visit_checklist:
+  - id: 1
+    item: "Flood History"
+    item_local: "ประวัติน้ำท่วม"
+    action: "Check with building management; look for water marks on walls/pillars in parking area"
+  - id: 2
+    item: "Title Deed Verification"
+    item_local: "ตรวจสอบเอกสารสิทธิ์"
+    action: "Request Chanote copy; verify at Land Office (สำนักงานที่ดิน); confirm no encumbrances"
+  - id: 3
+    item: "Foreign Quota Status"
+    item_local: "สถานะโควต้าต่างชาติ"
+    action: "Check with building juristic office; request written confirmation of available foreign quota"
+  - id: 4
+    item: "Construction Quality"
+    item_local: "คุณภาพการก่อสร้าง"
+    action: "Check wall thickness (knock test), soundproofing between units; common issue in budget condos"
+  - id: 5
+    item: "Common Area Condition"
+    item_local: "สภาพพื้นที่ส่วนกลาง"
+    action: "Inspect pool, gym, lobby maintenance; check if amenities match marketing materials"
+  - id: 6
+    item: "Security"
+    item_local: "ระบบรักษาความปลอดภัย"
+    action: "Verify CCTV coverage, guard presence (24hr?), key card access, visitor registration"
+  - id: 7
+    item: "Noise Level"
+    item_local: "ระดับเสียงรบกวน"
+    action: "Check BTS/MRT proximity noise, ongoing construction nearby, traffic noise"
+  - id: 8
+    item: "Mold / Moisture"
+    item_local: "เชื้อรา/ความชื้น"
+    action: "Tropical climate issue; check corners, behind furniture, bathroom ceiling; especially ground-floor units"
+  - id: 9
+    item: "Water Pressure"
+    item_local: "แรงดันน้ำ"
+    action: "Test all taps and shower simultaneously; upper-floor condos often have weak pressure"
+  - id: 10
+    item: "Air Conditioning"
+    item_local: "เครื่องปรับอากาศ"
+    action: "Check age, type (split/window), BTU capacity vs room size; test cooling performance"
+  - id: 11
+    item: "View Obstruction"
+    item_local: "สิ่งกีดขวางวิว"
+    action: "Check for new construction nearby that may block views; ask about planned developments"
+  - id: 12
+    item: "Sinking Fund Status"
+    item_local: "สถานะกองทุนสำรอง"
+    action: "Ask juristic office about sinking fund balance; check if special levies are planned"
+
+# ─────────────────────────────────────────────
+# ONBOARDING PROMPTS
+# ─────────────────────────────────────────────
+
+onboarding:
+  prompts:
+    search_mode:
+      question: "Are you looking to **rent**, **buy**, or **both**?"
+      question_local: "คุณกำลังมองหา **เช่า**, **ซื้อ**, หรือ **ทั้งสองอย่าง**?"
+    region_budget:
+      question: "Which city or area? (e.g., Bangkok Sukhumvit, Chiang Mai Old City, Phuket) And your budget in THB?"
+      question_local: "คุณสนใจพื้นที่ไหน? (เช่น สุขุมวิท กรุงเทพฯ, เชียงใหม่เมืองเก่า, ภูเก็ต) และงบประมาณเท่าไหร่ (บาท)?"
+    commute:
+      question: "Where do you commute to? Max commute time in minutes?"
+      question_local: "สถานที่ทำงาน/เรียนอยู่ที่ไหน? เวลาเดินทางสูงสุดที่รับได้กี่นาที?"
+    foreigner_supplement:
+      question: "Are you a Thai national or foreigner? (This affects ownership options and mortgage eligibility)"
+      question_local: "คุณเป็นคนไทยหรือชาวต่างชาติ? (มีผลต่อสิทธิ์การถือครองและสินเชื่อ)"
+      notes: "Critical for Thailand — determines property types available, ownership structure, and mortgage terms"

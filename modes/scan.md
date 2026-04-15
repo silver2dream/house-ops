@@ -1,6 +1,7 @@
 # Scan Mode — Portal Scanner
 
-<!-- Read modes/_shared.md before executing this mode. -->
+<!-- Read modes/_shared.md before executing this mode.
+     Load country_config from config/country/{country}.yml. -->
 
 **Execution recommendation:** Run this mode as a background subagent (`Agent` tool with `run_in_background: true`) to protect the main conversation context. Scanning multiple portals can take significant time.
 
@@ -10,7 +11,7 @@
 
 Three-level scanning strategy:
 - **Level 1 — agent-browser direct** (primary): Navigate each tracked portal's search results
-- **Level 2 — 實價登錄 API** (reference only): Used during evaluation, NOT here — never populates pipeline.md
+- **Level 2 — Market reference API** (reference only): Used during evaluation, NOT here — never populates pipeline.md. Refer to `country_config.market_reference.price_register` for what this source is.
 - **Level 3 — WebSearch** (broad discovery): site: queries to find listings outside tracked portals
 
 ---
@@ -18,7 +19,8 @@ Three-level scanning strategy:
 ## Step 1: Read Configuration
 
 1. Read `config/profile.yml`:
-   - `regions[].city` and `regions[].districts` → target areas
+   - `country` → load `config/country/{country}.yml`
+   - Target regions from profile
    - `budget.rent_max` → rental ceiling
    - `budget.buy_max` → purchase ceiling
    - `property.size_min` → minimum size
@@ -45,12 +47,7 @@ For each enabled portal matching the search mode:
 
 ### If portal has `url_template`:
 
-Substitute values from profile into the URL template:
-- `{region_code}` → numeric code for `regions[0].city` (台北市 = 1, 新北市 = 2, 桃園市 = 3)
-- `{section_codes}` → comma-separated codes for `districts` (look up 591's section codes)
-- `{rent_max}` → `budget.rent_max`
-- `{buy_max}` → `budget.buy_max`
-- `{size_min}` → `property.size_min`
+Substitute values from profile into the URL template. Use region codes from `country_config.regions.region_codes` if the template requires them. Substitute budget and size values from the profile.
 
 Then:
 ```bash
@@ -65,11 +62,10 @@ agent-browser open {base_url}
 agent-browser snapshot -i
 ```
 
-Then interact with the site's search filters to apply district/price/size criteria:
+Then interact with the site's search filters to apply area/price/size criteria:
 ```bash
 # Fill filter fields and submit search
-agent-browser fill @{district_input} "{district}"
-agent-browser fill @{price_input} "{price_max}"
+agent-browser fill @{filter_input} "{value}"
 agent-browser click @{search_button}
 agent-browser wait --load networkidle
 agent-browser snapshot -i
@@ -80,17 +76,17 @@ agent-browser snapshot -i
 From the search results page, extract each listing:
 - `title`: listing title text
 - `url`: full listing URL (absolute)
-- `address`: street address or district + road
-- `price`: price string (e.g., "22,000/月" or "1,280萬")
-- `size`: size in 坪
-- `layout`: bedroom/bathroom layout (e.g., "2房1衛")
+- `address`: street address or area + road
+- `price`: price string (formatted in country's currency)
+- `size`: size in country's area unit
+- `layout`: bedroom/bathroom layout
 - `portal`: the portal name from portals.yml
 
 ### Pagination:
 
-If results show a "next page" / "下一頁" control:
+If results show a "next page" control (look for standard pagination elements — the text varies by language and portal):
 ```bash
-agent-browser find text "下一頁" click
+agent-browser find text "{next_page_text}" click
 agent-browser wait --load networkidle
 agent-browser snapshot -i
 ```
@@ -105,10 +101,7 @@ Continue extracting until:
 
 For each `search_queries[]` entry in portals.yml (where `enabled: true`):
 
-1. Substitute template values into `query`:
-   - `{districts}` → join profile districts with space (e.g., "信義區 大安區")
-   - `{rent_max}` → `budget.rent_max`
-   - `{buy_max}` → `budget.buy_max`
+1. Substitute template values into `query` from the profile (target areas, budget values)
 
 2. Run WebSearch with the substituted query
 
@@ -118,8 +111,8 @@ For each `search_queries[]` entry in portals.yml (where `enabled: true`):
    agent-browser snapshot -i
    ```
    Check for expired signals:
-   - URL contains `error=true` parameter
-   - Page content contains "物件已下架" / "no longer available" / "此物件已結束"
+   - URL contains error parameters
+   - Page content contains "no longer available" or equivalent (check `country_config.report_labels.inactive_listing` for localized text)
    - Content is < 300 characters (only nav/footer, no listing body)
 
    Only proceed if listing appears active.
@@ -132,9 +125,9 @@ Apply to every extracted listing (both Level 1 and Level 3). Check against `port
 
 | Check | Rule | Result |
 |-------|------|--------|
-| Property type | Title contains an `exclude` type (預售屋, 店面, etc.) | `skipped_title` |
-| Price | Price > `title_filter.price.rent_max` (rent) or `.buy_max` (buy) | `skipped_title` |
-| Size | Size < `title_filter.size_min` | `skipped_title` |
+| Property type | Title contains an excluded type (from `country_config.property_types.exclude` or portals.yml filter) | `skipped_title` |
+| Price | Price > title_filter price ceiling | `skipped_title` |
+| Size | Size < title_filter size_min | `skipped_title` |
 | Passes all | — | `qualified` |
 
 ---
@@ -144,11 +137,11 @@ Apply to every extracted listing (both Level 1 and Level 3). Check against `port
 For each `qualified` listing, check against `data/scan-history.tsv`:
 
 **Layer 1 — URL exact match:**
-- If the listing URL already exists in the `url` column with status `added` → `skipped_dup`
+- If the listing URL already exists with status `added` → `skipped_dup`
 
 **Layer 2 — Normalized address match:**
-- Normalize the listing's address using the 5 rules from `modes/_shared.md`
-- If the normalized address matches any `normalized_address` column value → `skipped_dup`
+- Normalize the listing's address using the rules from `country_config.address_normalization.rules`
+- If the normalized address matches any existing entry → `skipped_dup`
 
 If neither match → listing is new, proceed to Step 6.
 
@@ -160,16 +153,16 @@ For each new qualified listing:
 
 **Append to `data/pipeline.md`:**
 ```
-- [ ] {url} | {portal} | {district} | {type} | {price} | {size} | {layout}
+- [ ] {url} | {portal} | {area} | {type} | {price} | {size} | {layout}
 ```
-Where `{type}` = `租` (rent) or `買` (buy), `{district}` = the listing's district.
+Where `{type}` = rent or buy label (use short labels), `{area}` = the listing's area/district.
 
 **Append to `data/scan-history.tsv`** (9 tab-separated columns):
 ```
 {url}\t{first_seen}\t{portal}\t{title}\t{address}\t{normalized_address}\t{price}\t{size}\tAdded
 ```
 - `first_seen`: today's date (YYYY-MM-DD)
-- `normalized_address`: apply the 5 normalization rules from _shared.md
+- `normalized_address`: apply the normalization rules from `country_config.address_normalization.rules`
 
 ---
 
@@ -189,29 +182,29 @@ After completing all portals and updates, output exactly this format:
 
 ```
 Portal Scan — YYYY-MM-DD
-━━━━━━━━━━━━━━━━━━━━━━━━
-平台掃描: N
-物件找到: N total
-快篩通過: N qualified
-重複略過: N skipped_dup
-標題不符: N skipped_title
-已失效略過: N skipped_expired
-新增至 pipeline.md: N
+========================
+Portals scanned: N
+Listings found: N total
+Quick filter passed: N qualified
+Duplicates skipped: N skipped_dup
+Title filter failed: N skipped_title
+Expired skipped: N skipped_expired
+Added to pipeline.md: N
 
-  + {district} | {portal} | {price} | {size} | {layout}
-  + {district} | {portal} | {price} | {size} | {layout}
+  + {area} | {portal} | {price} | {size} | {layout}
+  + {area} | {portal} | {price} | {size} | {layout}
   ...
 
-→ 執行 pipeline 模式開始評估新物件。
+→ Run pipeline mode to start evaluating new listings.
 ```
 
-List each newly added listing with a `+` prefix. If nothing was added, say "→ 本次掃描無新物件。"
+List each newly added listing with a `+` prefix. If nothing was added, say "→ No new listings found in this scan."
 
 ---
 
 ## Notes
 
-- **Level 2 (實價登錄) is evaluation-only.** It provides price comparison data during rent.md / buy.md evaluation — it never populates pipeline.md.
+- **Level 2 (market reference) is evaluation-only.** It provides price comparison data during rent.md / buy.md evaluation — it never populates pipeline.md.
 - **Do not verify liveness for Level 1 results** — freshly scraped search pages are assumed live. Liveness verification is only needed for Level 3 (WebSearch cached results).
 - **If a portal's page fails to load** (JS error, CAPTCHA, etc.): skip that portal, note it in the summary, continue with others.
 - **If `agent-browser` is not installed**: do not attempt any Level 1 or Level 3 liveness verification. Stop immediately and remind the user: `npm install -g agent-browser`.

@@ -1,6 +1,7 @@
 # Pipeline Mode — Batch Pipeline Processor
 
-<!-- Read modes/_shared.md first. -->
+<!-- Read modes/_shared.md first.
+     Load country_config from config/country/{country}.yml. -->
 
 **Execution recommendation:** Run this mode as a background subagent (`Agent` tool with `run_in_background: true`) to protect the main conversation context. Processing multiple listings generates substantial output.
 
@@ -15,9 +16,9 @@ Processes all unchecked (`- [ ]`) entries in `data/pipeline.md`. For each entry:
 ## Step 1: Read Pipeline
 
 1. Read `data/pipeline.md`
-2. Find all lines matching: `- [ ] {url} | {portal} | {district} | {type} | {price} | {size} | {layout}`
-3. If no unchecked entries → output "Pipeline 已清空，無待處理物件。" and stop
-4. Log count: "找到 {N} 個待評估物件。"
+2. Find all lines matching: `- [ ] {url} | {portal} | {area} | {type} | {price} | {size} | {layout}`
+3. If no unchecked entries → output "Pipeline is empty. No pending listings to process." and stop
+4. Log count: "Found {N} pending listings to evaluate."
 
 ---
 
@@ -31,10 +32,10 @@ For each `- [ ]` entry, in order:
 |-------|-----------|
 | URL | First field |
 | Portal | Second field |
-| District | Third field |
-| Type | Fourth field: `租` → rent, `買` → buy |
+| Area | Third field |
+| Type | Fourth field: detect rent vs buy |
 | Price | Fifth field |
-| Size | Sixth field (坪, parse number) |
+| Size | Sixth field (parse number, area unit from `country_config.market.area_unit`) |
 | Layout | Seventh field |
 
 ### 2b: Apply Phase 1 Quick Filter
@@ -44,8 +45,8 @@ Check against `config/profile.yml`. For rent listings check `budget.rent_max`, f
 | Check | Rule |
 |-------|------|
 | Price | Parsed price > budget ceiling → skip |
-| Size | Parsed 坪數 < `property.size_min` → skip |
-| Floor | If floor visible in entry or URL → check vs `property.floor_min` |
+| Size | Parsed size < `property.size_min` → skip |
+| Floor | If floor visible in entry or URL → check vs `property.floor_min` (if defined) |
 | Age | Usually not available at this stage — skip this check |
 
 Check `modes/_profile.md` deal_breakers against the title/address fields.
@@ -71,7 +72,7 @@ Check `modes/_profile.md` deal_breakers against the title/address fields.
 - Write the full report to `reports/`
 - Write TSV to `batch/tracker-additions/`
 
-**Note on verification:** In batch mode, set `**Verification:** unconfirmed (batch mode)` in the report header because Playwright liveness checks are not always reliable for queued entries that may have aged.
+**Note on verification:** In batch mode, set `**Verification:** unconfirmed (batch mode)` in the report header because liveness checks are not always reliable for queued entries that may have aged.
 
 ### 2d: Mark entry as done
 
@@ -93,46 +94,46 @@ After all entries are processed:
 2. **Output summary table:**
 
 ```
-Pipeline 處理完成 — YYYY-MM-DD
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-總共處理: N 個物件
-  完整評估: N 個 (報告已生成)
-  快篩略過: N 個 (SKIP)
+Pipeline Complete — YYYY-MM-DD
+===============================
+Total processed: N listings
+  Full evaluation: N (reports generated)
+  Quick filter skip: N (SKIP)
 
-新增至追蹤表:
-  + {###} | {district} | {price} | {score}/5 | {status} | [報告連結](reports/{filename})
+Added to tracker:
+  + {###} | {area} | {price} | {score}/5 | {status} | [Report](reports/{filename})
   ...
 
-略過物件:
+Skipped:
   - {url} — {reason}
   ...
 ```
 
 **IMPORTANT — Human Review Output:**
-After the summary table, always output a dedicated review section. For each qualified listing (score ≥ 3.5), output the full report content inline — do NOT use file links. The user reads everything in the conversation, not in files.
+After the summary table, always output a dedicated review section. For each qualified listing (score >= moderate threshold from `country_config.scoring.interpretation`), output the full report content inline — do NOT use file links. The user reads everything in the conversation, not in files.
 
 Format:
 
 ```
-## 待人工審閱
+## Human Review
 
-| 優先 | 物件 | 坪數 | 月租/總價 | 一句話 | 分數 | 原始物件 |
-|------|------|------|----------|--------|------|---------|
-| ⭐⭐ | {district} {address} | {size}坪 | {price} | {one-line summary} | {score}/5 | [🔗 591]({listing_url}) |
-| ⭐  | {district} {address} | {size}坪 | {price} | {one-line summary} | {score}/5 | [🔗 591]({listing_url}) |
+| Priority | Property | Size | Price | Summary | Score | Listing |
+|----------|----------|------|-------|---------|-------|---------|
+| ** | {area} {address} | {size} | {price} | {one-line summary} | {score}/5 | [Link]({listing_url}) |
+| *  | {area} {address} | {size} | {price} | {one-line summary} | {score}/5 | [Link]({listing_url}) |
 ...
 
 ---
 
-### ⭐⭐ {###} {district} {address}
-[🔗 591]({listing_url})
+### ** {###} {area} {address}
+[Link]({listing_url})
 
-{full report content — all sections: 基本資料, 價格分析, 通勤評估, 生活機能, 物件條件, 風險與潛力, 評分, 建議}
+{full report content — all sections}
 
 ---
 
-### ⭐ {###} {district} {address}
-[🔗 591]({listing_url})
+### * {###} {area} {address}
+[Link]({listing_url})
 
 {full report content}
 
@@ -140,10 +141,10 @@ Format:
 ...
 ```
 
-Priority rules:
-- ⭐⭐ = score ≥ 4.0 (推薦看屋)
-- ⭐  = score 3.5–3.9 (持保留態度)
-- Omit listings scored < 3.5 from this section entirely
+Priority rules (using thresholds from `country_config.scoring.interpretation`):
+- ** = score >= excellent threshold (recommended for viewing)
+- *  = score >= moderate threshold (worth considering)
+- Omit listings scored below moderate threshold from this section entirely
 
 ---
 

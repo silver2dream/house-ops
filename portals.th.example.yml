@@ -1,0 +1,63 @@
+# house-ops Portal Configuration — Thailand
+# Copied to portals.yml during onboarding.
+
+title_filter:
+  property_types:
+    include: ["condo", "apartment", "house", "townhouse", "villa", "shophouse"]
+    exclude: ["land", "factory", "warehouse"]
+  price:
+    rent_max: 50000
+    buy_max: 10000000
+  size_min: 20
+
+tracked_portals:
+  - name: "DDproperty Rent"
+    type: rent
+    enabled: true
+    url_template: "https://www.ddproperty.com/en/{type}-for-rent/in-{city}"
+
+  - name: "DDproperty Buy"
+    type: buy
+    enabled: true
+    url_template: "https://www.ddproperty.com/en/{type}-for-sale/in-{city}"
+
+  - name: "Hipflat Rent"
+    type: rent
+    enabled: true
+    base_url: "https://www.hipflat.co.th/en/condo-for-rent/bangkok"
+
+  - name: "Hipflat Buy"
+    type: buy
+    enabled: true
+    base_url: "https://www.hipflat.co.th/en/condo-for-sale/bangkok"
+
+  - name: "FazWaz Buy"
+    type: buy
+    enabled: true
+    base_url: "https://www.fazwaz.com/property-for-sale/thailand"
+
+  - name: "Dot Property"
+    type: buy
+    enabled: true
+    base_url: "https://www.dotproperty.co.th/en/properties-for-sale"
+
+  - name: "PropertyScout Rent"
+    type: rent
+    enabled: true
+    base_url: "https://propertyscout.co.th/en/"
+
+market_reference:
+  reic:
+    enabled: true
+    use_for: price_indices
+
+search_queries:
+  - name: "DDproperty rent discovery"
+    query: "site:ddproperty.com {districts} for rent {rent_max}"
+    enabled: true
+  - name: "DDproperty buy discovery"
+    query: "site:ddproperty.com {districts} for sale {buy_max}"
+    enabled: true
+  - name: "Hipflat buy discovery"
+    query: "site:hipflat.co.th {districts} for sale"
+    enabled: true
