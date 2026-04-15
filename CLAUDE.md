@@ -15,16 +15,16 @@ On every session start, run these checks **silently** (no output to the user unl
 3. Does `data/tracker.md` exist?
 4. Does `data/pipeline.md` exist?
 5. Does `modes/_profile.md` exist?
-6. Is `agent-browser` installed? Run `which agent-browser` silently.
+6. Is `playwright-cli` installed? Run `which playwright-cli` silently.
 
 **If `modes/_profile.md` is missing** → silently copy from `modes/_profile.template.md`. This is the user's customization file and will never be overwritten by system updates.
 
 **If any of the five main files are missing** → enter Onboarding mode (see next section). Do NOT run evaluations, scans, or any other mode until the basics are in place.
 
-**If `agent-browser` is not found** → warn the user immediately (this is NOT silent):
-> Warning: `agent-browser` is not installed. Scan and listing verification features require it. Please run:
+**If `playwright-cli` is not found** → warn the user immediately (this is NOT silent):
+> Warning: `playwright-cli` is not installed. Scan and listing verification features require it. Please run:
 > ```bash
-> npm install -g agent-browser
+> npm install -g @playwright/cli@latest
 > ```
 > Restart Claude Code after installation. Without it, scan or URL paste results will be unreliable and evaluations may be based on stale or incorrect data.
 
@@ -187,17 +187,17 @@ When the user pastes a URL, execute this sequence:
 
 ### 1. Verify Listing is Active
 
-Use `agent-browser` (via Bash tool):
+Use `playwright-cli` (via Bash tool):
 ```bash
-agent-browser open {url}
-agent-browser snapshot -i
+playwright-cli goto {url}
+playwright-cli snapshot
 ```
 
 Interpretation:
 - Only footer/navbar present, no listing content → listing **closed** → report "Listing no longer available" and stop
 - Title + description + price + contact/apply section present → listing **active** → continue
 
-**NEVER** rely on WebSearch or WebFetch alone to verify if a listing is active. Always use `agent-browser`. If `agent-browser` is not installed, stop and remind the user to install it before proceeding.
+**NEVER** rely on WebSearch or WebFetch alone to verify if a listing is active. Always use `playwright-cli`. If `playwright-cli` is not installed, stop and remind the user to install it before proceeding.
 
 ### 2. Detect Rent vs Buy
 

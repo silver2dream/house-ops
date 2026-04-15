@@ -10,7 +10,7 @@
 ## Overview
 
 Three-level scanning strategy:
-- **Level 1 — agent-browser direct** (primary): Navigate each tracked portal's search results
+- **Level 1 — playwright-cli direct** (primary): Navigate each tracked portal's search results
 - **Level 2 — Market reference API** (reference only): Used during evaluation, NOT here — never populates pipeline.md. Refer to `country_config.market_reference.price_register` for what this source is.
 - **Level 3 — WebSearch** (broad discovery): site: queries to find listings outside tracked portals
 
@@ -39,9 +39,9 @@ Three-level scanning strategy:
 
 ---
 
-## Step 2: Level 1 — agent-browser Direct Scan (Primary)
+## Step 2: Level 1 — playwright-cli Direct Scan (Primary)
 
-**Prerequisite:** `agent-browser` must be installed (`npm install -g agent-browser`). If not found, stop and remind the user before proceeding.
+**Prerequisite:** `playwright-cli` must be installed (`npm install -g @playwright/cli@latest`). If not found, stop and remind the user before proceeding.
 
 For each enabled portal matching the search mode:
 
@@ -51,24 +51,24 @@ Substitute values from profile into the URL template. Use region codes from `cou
 
 Then:
 ```bash
-agent-browser open {constructed_url}
-agent-browser snapshot -i
+playwright-cli goto {constructed_url}
+playwright-cli snapshot
 ```
 
 ### If portal has `base_url`:
 
 ```bash
-agent-browser open {base_url}
-agent-browser snapshot -i
+playwright-cli goto {base_url}
+playwright-cli snapshot
 ```
 
 Then interact with the site's search filters to apply area/price/size criteria:
 ```bash
 # Fill filter fields and submit search
-agent-browser fill @{filter_input} "{value}"
-agent-browser click @{search_button}
-agent-browser wait --load networkidle
-agent-browser snapshot -i
+playwright-cli fill {filter_input} "{value}"
+playwright-cli click {search_button}
+playwright-cli snapshot
+playwright-cli snapshot
 ```
 
 ### Extraction (both methods):
@@ -86,9 +86,9 @@ From the search results page, extract each listing:
 
 If results show a "next page" control (look for standard pagination elements — the text varies by language and portal):
 ```bash
-agent-browser find text "{next_page_text}" click
-agent-browser wait --load networkidle
-agent-browser snapshot -i
+playwright-cli click "getByText('{next_page_text}')"
+playwright-cli snapshot
+playwright-cli snapshot
 ```
 
 Continue extracting until:
@@ -105,10 +105,10 @@ For each `search_queries[]` entry in portals.yml (where `enabled: true`):
 
 2. Run WebSearch with the substituted query
 
-3. For each result URL: **verify liveness with `agent-browser`** before considering it:
+3. For each result URL: **verify liveness with `playwright-cli`** before considering it:
    ```bash
-   agent-browser open {url}
-   agent-browser snapshot -i
+   playwright-cli goto {url}
+   playwright-cli snapshot
    ```
    Check for expired signals:
    - URL contains error parameters
@@ -207,4 +207,4 @@ List each newly added listing with a `+` prefix. If nothing was added, say "→ 
 - **Level 2 (market reference) is evaluation-only.** It provides price comparison data during rent.md / buy.md evaluation — it never populates pipeline.md.
 - **Do not verify liveness for Level 1 results** — freshly scraped search pages are assumed live. Liveness verification is only needed for Level 3 (WebSearch cached results).
 - **If a portal's page fails to load** (JS error, CAPTCHA, etc.): skip that portal, note it in the summary, continue with others.
-- **If `agent-browser` is not installed**: do not attempt any Level 1 or Level 3 liveness verification. Stop immediately and remind the user: `npm install -g agent-browser`.
+- **If `playwright-cli` is not installed**: do not attempt any Level 1 or Level 3 liveness verification. Stop immediately and remind the user: `npm install -g @playwright/cli@latest`.

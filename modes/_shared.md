@@ -103,10 +103,10 @@ Use `country_config.report_labels` for all section headers, table headers, risk 
 - `{road-slug}`: road name slugified, hyphenated; if ambiguous → `road-{4-char-hex-of-address-hash}`
 - `{YYYY-MM-DD}`: evaluation date
 
-**Listing liveness verification:** ALWAYS use `agent-browser` (`agent-browser open` + `agent-browser snapshot`). NEVER use WebSearch or WebFetch alone to determine if a listing is active. Expired signals: URL error parameters, "no longer available" / inactive text in content (check `country_config.report_labels.inactive_listing` for localized text), content < 300 chars with only nav/footer.
+**Listing liveness verification:** ALWAYS use `playwright-cli` (`playwright-cli open` + `playwright-cli snapshot`). NEVER use WebSearch or WebFetch alone to determine if a listing is active. Expired signals: URL error parameters, "no longer available" / inactive text in content (check `country_config.report_labels.inactive_listing` for localized text), content < 300 chars with only nav/footer.
 
 **Platform access methods:**
-Refer to `country_config.portals` for each portal's access method. Most real estate portals are SPAs requiring `agent-browser`. Market reference data sources (e.g., price registers) are reference-only and never populate the pipeline.
+Refer to `country_config.portals` for each portal's access method. Most real estate portals are SPAs requiring `playwright-cli`. Market reference data sources (e.g., price registers) are reference-only and never populate the pipeline.
 
 ---
 

@@ -16,12 +16,12 @@ Full evaluation of a rental listing. Two phases:
 ## Section 1: Input Handling
 
 ### URL input (most common)
-1. `agent-browser open {url}`
-2. `agent-browser snapshot -i`
+1. `playwright-cli goto {url}`
+2. `playwright-cli snapshot`
 3. **Verify listing is active:**
    - Active: listing title + description + price + contact/apply section all present
    - Inactive: only nav and footer visible, no listing content → output the inactive listing message from `country_config.report_labels.inactive_listing` and stop
-4. **NEVER** use WebSearch or WebFetch alone to verify listing status. Always use `agent-browser`.
+4. **NEVER** use WebSearch or WebFetch alone to verify listing status. Always use `playwright-cli`.
 
 ### Pasted text input
 Proceed directly to Phase 1 using the provided content.

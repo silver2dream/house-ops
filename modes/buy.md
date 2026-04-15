@@ -18,8 +18,8 @@ Buy mode extends rent mode with loan calculations, market reference sale prices,
 ## Section 1: Input Handling
 
 ### URL input
-1. `agent-browser open {url}`
-2. `agent-browser snapshot -i`
+1. `playwright-cli goto {url}`
+2. `playwright-cli snapshot`
 3. **Verify active:** listing title + price + contact section present. If only nav/footer → output the inactive listing message from `country_config.report_labels.inactive_listing` and stop.
 4. **NEVER** use WebSearch or WebFetch alone for liveness checks.
 
